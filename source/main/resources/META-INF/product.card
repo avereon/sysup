@@ -1,0 +1,29 @@
+{
+  "group" : "${project.groupId}",
+  "artifact" : "${project.artifactId}",
+  "version" : "${project.version}",
+  "timestamp" : "${project.timestamp}",
+	"packaging": "mod",
+	"packagingVersion": "2",
+	"icons": [ "${project.artifactId}", "https://southbranchcontrols.com/download/latest/${project.artifactId}/product/icon" ],
+	"name": "${project.name}",
+	"provider": "${project.organization.name}",
+	"providerUrl": "${project.organization.url}",
+	"inception": "${project.inceptionYear}",
+	"summary": "${project.description}",
+  "description" : "${project.description}",
+  "copyrightSummary" : "All rights reserved.",
+  "licenseSummary" : "${project.name} comes with ABSOLUTELY NO WARRANTY. This is open software, and you are welcome to redistribute it under certain conditions.",
+	"javaVersion": "14",
+	"maintainers": [
+		{
+			"name": "Mark Soderquist",
+			"email": "mark@southbranchcontrols.com",
+			"timezone": "US/Mountain",
+			"organization": "Avereon",
+			"organizationUrl": "https://www.southbranchcontrols.com",
+			"roles": [ "Architect", "Developer" ]
+		}
+	],
+	"contributors": []
+}

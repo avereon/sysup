@@ -1,0 +1,29 @@
+.updater-tool .layout {
+	-fx-spacing: 0.5em;
+	-fx-alignment: center;
+}
+
+.updater-tool .icon {
+	-fx-font-size: 1em;
+}
+
+.updater-tool .result {
+	-fx-font-size: 2em;
+}
+
+.updater-tool .progress {
+	-fx-pref-width: 6cm;
+	-fx-pref-height: 1cm;
+}
+
+.updater-tool .message {
+	#-fx-font-size: 2em;
+}
+
+.score-graph {
+	-fx-padding: 2em;
+}
+
+.score-graph .divider {
+	-fx-stroke: -fx-text-base-color;
+}

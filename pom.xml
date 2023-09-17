@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.avereon.pom</groupId>
+		<artifactId>mod</artifactId>
+		<version>3.5.3</version>
+	</parent>
+
+	<groupId>com.southbranchcontrols.perform</groupId>
+	<artifactId>station-updater-mod</artifactId>
+	<version>1.0.0</version>
+	<packaging>jar</packaging>
+
+	<name>Perform Station Updater Mod</name>
+	<description>Xenon mod for updating South Branch Control stations</description>
+	<inceptionYear>2023</inceptionYear>
+
+	<developers>
+		<developer>
+			<name>Mark Soderquist</name>
+			<email>mark@soderquist.net</email>
+			<roles>
+				<role>Architect</role>
+			</roles>
+		</developer>
+	</developers>
+
+	<repositories>
+		<repository>
+			<id>avn</id>
+			<url>https://repo.avereon.com/avn</url>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>avn</id>
+			<url>https://repo.avereon.com/avn</url>
+		</pluginRepository>
+	</pluginRepositories>
+
+	<properties>
+		<cameo.version>2.10</cameo.version>
+		<images-folder>target/main/images</images-folder>
+	</properties>
+
+	<dependencies>
+		<!-- <dependency>
+			<groupId>com.avereon</groupId>
+			<artifactId>acorn-cli</artifactId>
+			<version>[1.2.2,]</version>
+			<scope>compile</scope>
+		</dependency> -->
+	</dependencies>
+
+	<build>
+		<sourceDirectory>source/main/java</sourceDirectory>
+		<testSourceDirectory>source/test/java</testSourceDirectory>
+
+		<resources>
+			<resource>
+				<directory>source/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<!-- Version comes from parent -->
+				<configuration>
+					<!-- The argLine and systemPropertyVariables should match the failsafe configuration below -->
+					<argLine>
+						--add-opens=com.avereon.acorn/com.avereon.acorn=ALL-UNNAMED
+					</argLine>
+				</configuration>
+			</plugin>
+		</plugins>
+
+	</build>
+
+	<profiles>
+		<profile>
+			<id>packs</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.avereon</groupId>
+						<artifactId>cameo</artifactId>
+						<version>${cameo.version}</version>
+						<executions>
+							<execution>
+								<id>render</id>
+								<phase>prepare-package</phase>
+								<goals>
+									<goal>render</goal>
+								</goals>
+								<configuration>
+									<images>
+										<image>
+											<class>com.southbranchcontrols.performstationupdater.AcornIcon</class>
+											<target>${images-folder}/product.png</target>
+											<theme>light</theme>
+										</image>
+									</images>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+</project>
+
