@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - stable
+  schedule:
+    - cron: '40 12 * * *'
+  workflow_dispatch:
+
+env:
+  SBC_PRODUCT: "perform-station-updater"
+  # The default release, should be overridden in config.sh
+  SBC_RELEASE: "latest"
+  # The default platform, should be overridden in the platform binaries jobs below
+  SBC_PLATFORM: "linux"
+
+  SBC_GPG_PASSWORD: ${{ secrets.SBC_GPG_PASSWORD }}
+  SBC_KEYSTORE_PASSWORD: ${{ secrets.SBC_KEYSTORE_PASSWORD }}
+  SBC_REPO_USERNAME: ${{ secrets.SBC_REPO_USERNAME }}
+  SBC_REPO_PASSWORD: ${{ secrets.SBC_REPO_PASSWORD }}
+
+  DISPLAY: ":99"
+  GITHUB_REF: ${{ github.ref }}
+  JAVA_VERSION: "17"
+  MAVEN_PARMS: "-B -U -V --settings .github/settings.xml --file pom.xml"
+  XVFB_PARMS: "-screen 0 1920x1080x24 -nolisten unix"
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Fetch sources
+        uses: actions/checkout@v3
+
+      - name: Fetch CI/CD resources
+        uses: actions/checkout@v3
+        with:
+          repository: southbranchcontrols/cicd
+          path: .github
+
+      - name: Configuration
+        shell: bash
+        run: |
+          source .github/config.sh
+
+      # Required to render the product icon
+      - name: Set up Virtual Display
+        run: |
+          Xvfb ${{env.DISPLAY}} ${{env.XVFB_PARMS}} &
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: ${{env.JAVA_DISTRO}}
+          java-version: ${{env.JAVA_VERSION}}
+
+      - name: Maven Repository Cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: java
+
+      - name: Compile
+        run: |
+          mvn ${{env.MAVEN_PARMS}} compile
+
+      - name: Unit Tests
+        run: |
+          mvn ${{env.MAVEN_PARMS}} test
+
+      - name: CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+
+      - name: Deploy Arifacts
+        run: |
+          mvn ${{env.MAVEN_PARMS}} deploy -Dmaven.test.skip=true
+
+      - name: Deploy JavaDoc
+        run: |
+          ssh -t ${{env.SBC_REPO_USERNAME}}@southbranchcontrols.com "mkdir -p ${{env.JAVADOC_DEPLOY_PATH}};"
+          if [ $? -ne 0 ]; then exit 1; fi
+          scp -B target/${SBC_PRODUCT}-*-javadoc.jar ${{env.SBC_REPO_USERNAME}}@southbranchcontrols.com:${{env.JAVADOC_DEPLOY_PATH}}/javadoc.jar 2>&1
+          if [ $? -ne 0 ]; then exit 1; fi
+          ssh -t ${{env.SBC_REPO_USERNAME}}@southbranchcontrols.com "mkdir -p ${{env.JAVADOC_TARGET_PATH}};rm -rf ${{env.JAVADOC_TARGET_PATH}}/*;unzip -o ${{env.JAVADOC_DEPLOY_PATH}}/javadoc.jar -d ${{env.JAVADOC_TARGET_PATH}}"
+          if [ $? -ne 0 ]; then exit 1; fi
+
+      - name: Build Packs
+        run: |
+          mvn ${{env.MAVEN_PARMS}} verify -P testui,packs
+
+      - name: Deploy Product Pack
+        run: |
+          scp -B target/*product.jar ${{env.SBC_REPO_USERNAME}}@southbranchcontrols.com:${PRODUCT_DEPLOY_PATH} 2>&1
+
+      - name: Deploy Product Icon
+        run: |
+          scp -B target/main/images/*product.png ${{env.SBC_REPO_USERNAME}}@southbranchcontrols.com:${PRODUCT_DEPLOY_PATH} 2>&1
+
+      - name: Deploy Product Card
+        run: |
+          scp -B target/main/java/META-INF/*.card ${{env.SBC_REPO_USERNAME}}@southbranchcontrols.com:${PRODUCT_DEPLOY_PATH} 2>&1
