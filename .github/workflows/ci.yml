@@ -84,9 +84,9 @@ jobs:
 #      - name: CodeQL Analysis
 #        uses: github/codeql-action/analyze@v2
 
-      - name: Deploy Arifacts
-        run: |
-          mvn ${{env.MAVEN_PARMS}} deploy -Dmaven.test.skip=true
+#      - name: Deploy Arifacts
+#        run: |
+#          mvn ${{env.MAVEN_PARMS}} deploy -Dmaven.test.skip=true
 
       - name: Deploy JavaDoc
         run: |
