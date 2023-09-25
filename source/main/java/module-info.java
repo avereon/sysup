@@ -1,6 +1,6 @@
 import com.southbranchcontrols.performstationupdater.UpdaterMod;
 
-module com.southbranchcontrols.perform.station.updater {
+module com.southbranchcontrols.performstationupdater {
 
 	// Compile-time only
 	requires static lombok;

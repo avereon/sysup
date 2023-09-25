@@ -77,7 +77,7 @@
 				<configuration>
 					<!-- The argLine and systemPropertyVariables should match the failsafe configuration below -->
 					<argLine>
-						--add-opens=com.avereon.acorn/com.avereon.acorn=ALL-UNNAMED
+						--add-opens=com.southbranchcontrols.performstationupdater/com.southbranchcontrols.performstationupdater=ALL-UNNAMED
 					</argLine>
 				</configuration>
 			</plugin>
