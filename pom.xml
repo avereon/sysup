@@ -12,7 +12,7 @@
 	</parent>
 
 	<groupId>com.southbranchcontrols.perform</groupId>
-	<artifactId>perform-station-updater-mod</artifactId>
+	<artifactId>perform-station-updater</artifactId>
 	<version>1.0.0</version>
 	<packaging>jar</packaging>
 
