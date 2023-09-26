@@ -92,10 +92,12 @@ jobs:
 #        run: |
 #          mvn ${{env.MAVEN_PARMS}} deploy -Dmaven.test.skip=true
 
+      - name: Create Deploy Target
+        run: |
+          ssh -t ${{env.SBC_REPO_USERNAME}}@southbranchcontrols.com "mkdir -p ${{env.JAVADOC_DEPLOY_PATH}};"
+
 #      - name: Deploy JavaDoc
 #        run: |
-#          ssh -t ${{env.SBC_REPO_USERNAME}}@southbranchcontrols.com "mkdir -p ${{env.JAVADOC_DEPLOY_PATH}};"
-#          if [ $? -ne 0 ]; then exit 1; fi
 #          scp -B target/${SBC_PRODUCT}-*-javadoc.jar ${{env.SBC_REPO_USERNAME}}@southbranchcontrols.com:${{env.JAVADOC_DEPLOY_PATH}}/javadoc.jar 2>&1
 #          if [ $? -ne 0 ]; then exit 1; fi
 #          ssh -t ${{env.SBC_REPO_USERNAME}}@southbranchcontrols.com "mkdir -p ${{env.JAVADOC_TARGET_PATH}};rm -rf ${{env.JAVADOC_TARGET_PATH}}/*;unzip -o ${{env.JAVADOC_DEPLOY_PATH}}/javadoc.jar -d ${{env.JAVADOC_TARGET_PATH}}"
