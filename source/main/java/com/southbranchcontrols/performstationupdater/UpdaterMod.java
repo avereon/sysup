@@ -24,14 +24,14 @@ public class UpdaterMod extends Mod {
 		getProgram().getAssetManager().addScheme( new UpdaterScheme( getProgram() ) );
 
 		registerAssetType( updaterAssetType = new UpdaterAssetType( this ) );
-		ToolRegistration design2dEditorRegistration = new ToolRegistration( this, AcornTool.class );
+		ToolRegistration design2dEditorRegistration = new ToolRegistration( this, UpdaterTool.class );
 		design2dEditorRegistration.setName( "Acorn Counting Tool" );
 		registerTool( updaterAssetType, design2dEditorRegistration );
 	}
 
 	@Override
 	public void shutdown() throws Exception {
-		unregisterTool( updaterAssetType, AcornTool.class );
+		unregisterTool( updaterAssetType, UpdaterTool.class );
 		unregisterAssetType( updaterAssetType );
 
 		getProgram().getAssetManager().removeScheme( UpdaterScheme.ID );
