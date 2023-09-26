@@ -16,7 +16,7 @@
 	<version>1.0.0</version>
 	<packaging>jar</packaging>
 
-	<name>Perform Station Updater Mod</name>
+	<name>Perform Station Updater</name>
 	<description>Xenon mod for updating South Branch Control stations</description>
 	<inceptionYear>2023</inceptionYear>
 
