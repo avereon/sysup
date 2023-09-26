@@ -104,7 +104,7 @@
 								<configuration>
 									<images>
 										<image>
-											<class>com.southbranchcontrols.performstationupdater.AcornIcon</class>
+											<class>com.avereon.zenna.icon.SouthBranchIcon</class>
 											<target>${images-folder}/product.png</target>
 											<theme>light</theme>
 										</image>
