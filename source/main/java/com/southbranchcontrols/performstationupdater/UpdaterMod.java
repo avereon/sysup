@@ -2,6 +2,7 @@ package com.southbranchcontrols.performstationupdater;
 
 import com.avereon.xenon.Mod;
 import com.avereon.xenon.ToolRegistration;
+import com.avereon.zenna.icon.SouthBranchIcon;
 import lombok.CustomLog;
 
 @CustomLog
@@ -18,7 +19,7 @@ public class UpdaterMod extends Mod {
 	@Override
 	public void startup() throws Exception {
 		super.startup();
-		registerIcon( "updater", new AcornIcon() );
+		registerIcon( "updater", new SouthBranchIcon() );
 
 		getProgram().getAssetManager().addScheme( new UpdaterScheme( getProgram() ) );
 
@@ -35,7 +36,7 @@ public class UpdaterMod extends Mod {
 
 		getProgram().getAssetManager().removeScheme( UpdaterScheme.ID );
 
-		unregisterIcon( getCard().getArtifact(), new AcornIcon() );
+		unregisterIcon( getCard().getArtifact(), new SouthBranchIcon() );
 		super.shutdown();
 	}
 
