@@ -2,6 +2,7 @@ package com.southbranchcontrols.performstationupdater;
 
 import com.avereon.xenon.Mod;
 import com.avereon.xenon.ToolRegistration;
+import com.avereon.zenna.icon.PerformIcon;
 import com.avereon.zenna.icon.SouthBranchIcon;
 import lombok.CustomLog;
 
@@ -19,13 +20,15 @@ public class UpdaterMod extends Mod {
 	@Override
 	public void startup() throws Exception {
 		super.startup();
-		registerIcon( "updater", new SouthBranchIcon() );
+		registerIcon( "sbc", new SouthBranchIcon() );
+		registerIcon( "perform", new PerformIcon() );
+		registerIcon( "updater", new PerformIcon() );
 
 		getProgram().getAssetManager().addScheme( new UpdaterScheme( getProgram() ) );
 
 		registerAssetType( updaterAssetType = new UpdaterAssetType( this ) );
 		ToolRegistration design2dEditorRegistration = new ToolRegistration( this, UpdaterTool.class );
-		design2dEditorRegistration.setName( "Acorn Counting Tool" );
+		design2dEditorRegistration.setName( "Perform Station Updater Tool" );
 		registerTool( updaterAssetType, design2dEditorRegistration );
 	}
 

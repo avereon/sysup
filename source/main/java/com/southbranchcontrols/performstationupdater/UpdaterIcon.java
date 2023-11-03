@@ -1,8 +1,8 @@
 package com.southbranchcontrols.performstationupdater;
 
-import com.avereon.zenna.icon.SouthBranchIcon;
+import com.avereon.zenna.icon.PerformIcon;
 
-public class UpdaterIcon extends SouthBranchIcon {
+public class UpdaterIcon extends PerformIcon {
 
 	public static void main( String[] commands ) {
 		proof( new UpdaterIcon() );

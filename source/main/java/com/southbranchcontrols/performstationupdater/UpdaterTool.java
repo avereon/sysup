@@ -15,7 +15,6 @@ public class UpdaterTool extends ProgramTool {
 		addStylesheet( UpdaterMod.STYLESHEET );
 		getStyleClass().addAll( "updater-tool" );
 		setIcon( "updater" );
-
 	}
 
 	@Override
@@ -25,7 +24,8 @@ public class UpdaterTool extends ProgramTool {
 	@Override
 	protected void ready( OpenAssetRequest request ) throws ToolException {
 		super.ready( request );
-		setTitle( request.getAsset().getName() );
+		//setTitle( request.getAsset().getName() );
+		setTitle( "Station Updater" );
 	}
 
 	@Override

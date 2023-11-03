@@ -12,12 +12,12 @@ import com.avereon.xenon.asset.exception.AssetException;
 
 public class UpdaterAssetType extends AssetType {
 
-	private static final String uriPattern = "performstationupdater:updater";
+	private static final String uriPattern = "perform:updater";
 
 	public static final java.net.URI URI = java.net.URI.create( uriPattern );
 
 	public UpdaterAssetType( XenonProgramProduct product ) {
-		super( product, "performstationupdater" );
+		super( product, "updater" );
 
 		PlaceholderCodec codec = new PlaceholderCodec();
 		codec.addSupported( Codec.Pattern.URI, uriPattern );
