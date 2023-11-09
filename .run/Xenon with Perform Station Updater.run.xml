@@ -2,7 +2,7 @@
   <configuration default="false" name="Xenon with Perform Station Updater" type="Application" factoryName="Application">
     <option name="INCLUDE_PROVIDED_SCOPE" value="true" />
     <option name="MAIN_CLASS_NAME" value="com.avereon.xenon.Xenon" />
-    <module name="station-updater-mod" />
+    <module name="perform-station-updater" />
     <option name="PROGRAM_PARAMETERS" value="--noupdate --profile perform --log-level config --enable-mod com.southbranchcontrols.performstationupdater" />
     <method v="2">
       <option name="Make" enabled="true" />
