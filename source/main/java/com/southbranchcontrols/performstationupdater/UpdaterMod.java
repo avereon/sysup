@@ -24,7 +24,7 @@ public class UpdaterMod extends Mod {
 		registerIcon( "perform", new PerformIcon() );
 		registerIcon( "updater", new PerformIcon() );
 
-		getProgram().getAssetManager().addScheme( new UpdaterScheme( getProgram() ) );
+		getProgram().getAssetManager().addScheme( new PerformScheme( getProgram() ) );
 
 		registerAssetType( updaterAssetType = new UpdaterAssetType( this ) );
 		ToolRegistration design2dEditorRegistration = new ToolRegistration( this, UpdaterTool.class );
@@ -37,7 +37,7 @@ public class UpdaterMod extends Mod {
 		unregisterTool( updaterAssetType, UpdaterTool.class );
 		unregisterAssetType( updaterAssetType );
 
-		getProgram().getAssetManager().removeScheme( UpdaterScheme.ID );
+		getProgram().getAssetManager().removeScheme( PerformScheme.ID );
 
 		unregisterIcon( getCard().getArtifact(), new SouthBranchIcon() );
 		super.shutdown();
