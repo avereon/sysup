@@ -33,6 +33,10 @@ public class UpdaterAssetType extends AssetType {
 	public boolean assetOpen( Xenon program, Asset asset ) throws AssetException {
 		asset.setUri( URI );
 		asset.setName( Rb.text( RbKey.ASSET, "updater-name" ) );
+
+		// Setting the scheme when the asset is opened solves a bunch of "new" asset problems
+		asset.setScheme( program.getAssetManager().getScheme( PerformScheme.ID ) );
+
 		asset.setModified( false );
 		return true;
 	}
