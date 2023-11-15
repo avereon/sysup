@@ -7,8 +7,10 @@ module com.southbranchcontrols.performstationupdater {
 
 	// Both compile-time and run-time
 	requires com.avereon.xenon;
+	requires com.opencsv;
 	requires java.management;
 
+	opens com.southbranchcontrols.performstationupdater;
 	opens com.southbranchcontrols.performstationupdater.bundles;
 	opens com.southbranchcontrols.performstationupdater.settings;
 
