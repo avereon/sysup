@@ -9,6 +9,7 @@ module com.southbranchcontrols.performstationupdater {
 	requires com.avereon.xenon;
 	requires com.opencsv;
 	requires java.management;
+	requires jsch;
 
 	opens com.southbranchcontrols.performstationupdater;
 	opens com.southbranchcontrols.performstationupdater.bundles;

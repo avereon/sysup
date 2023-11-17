@@ -10,14 +10,9 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.Background;
-import javafx.scene.paint.Color;
 import javafx.util.Callback;
 import lombok.CustomLog;
-import lombok.Data;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Date;
 import java.util.List;
 
 @CustomLog
@@ -63,11 +58,13 @@ public class UpdaterTool extends ProgramTool {
 		name.setCellValueFactory( new PropertyValueFactory<>( "name" ) );
 		TableColumn<StationStatus, StepStatus> setup = new TableColumn<>( "Setup" );
 		setup.setCellValueFactory( new PropertyValueFactory<>( "setup" ) );
+		setup.setCellFactory( new StepStatusCellFactory() );
 		TableColumn<StationStatus, StepStatus> update = new TableColumn<>( "Update" );
 		update.setCellValueFactory( new PropertyValueFactory<>( "update" ) );
+		update.setCellFactory( new StepStatusCellFactory() );
 		TableColumn<StationStatus, StepStatus> upgrade = new TableColumn<>( "Upgrade" );
 		upgrade.setCellValueFactory( new PropertyValueFactory<>( "upgrade" ) );
-
+		upgrade.setCellFactory( new StepStatusCellFactory() );
 		TableColumn<StationStatus, StepStatus> restart = new TableColumn<>( "Restart" );
 		restart.setCellValueFactory( new PropertyValueFactory<>( "restart" ) );
 		restart.setCellFactory( new StepStatusCellFactory() );
@@ -75,7 +72,7 @@ public class UpdaterTool extends ProgramTool {
 		table.getColumns().addAll( List.of( action, name, setup, update, upgrade, restart ) );
 	}
 
-	static class StationButtonCellFactory implements Callback<TableColumn<StationStatus, String>, TableCell<StationStatus, String>> {
+	class StationButtonCellFactory implements Callback<TableColumn<StationStatus, String>, TableCell<StationStatus, String>> {
 
 		@Override
 		public TableCell<StationStatus, String> call( TableColumn<StationStatus, String> param ) {
@@ -93,8 +90,9 @@ public class UpdaterTool extends ProgramTool {
 						setGraphic( btn );
 						setText( null );
 						btn.setOnAction( event -> {
-							StationStatus status = getTableView().getItems().get( getIndex() );
-							System.out.println( status.getName() );
+							StationStatus station = getTableView().getItems().get( getIndex() );
+							//System.out.println( station.getName() );
+							((UpdaterMod)getProduct()).getStationUpdateManager().getUpdater( station ).next();
 						} );
 					}
 				}
@@ -124,58 +122,6 @@ public class UpdaterTool extends ProgramTool {
 				}
 			};
 
-		}
-
-	}
-
-	@Data
-	public static class StationStatus {
-
-		private final String name;
-
-		private InetAddress address;
-
-		private StepStatus setup = new StepStatus( StepStatus.State.WAITING, new Date() );
-
-		private StepStatus update = new StepStatus( StepStatus.State.WAITING, new Date() );
-
-		private StepStatus upgrade = new StepStatus( StepStatus.State.WAITING, new Date() );
-
-		private StepStatus restart = new StepStatus( StepStatus.State.WAITING, new Date() );
-
-		public StationStatus( Station station ) {
-			this.name = station.name();
-			try {
-				this.address = InetAddress.getByName( station.address() );
-			} catch( UnknownHostException exception ) {
-				log.atWarn().log( "Unable to resolve address {}", station.address() );
-			}
-		}
-
-	}
-
-	public record StepStatus(State state, Date when) {
-
-		public enum State {
-			WAITING( Color.GRAY ),
-			RUNNING( Color.BLUE ),
-			SUCCESS( Color.GREEN ),
-			FAILURE( Color.RED );
-
-			private final Color color;
-
-			State( Color color ) {
-				this.color = color;
-			}
-
-			public Color color() {
-				return color;
-			}
-		}
-
-		@Override
-		public String toString() {
-			return state.name();
 		}
 
 	}
