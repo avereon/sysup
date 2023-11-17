@@ -9,7 +9,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.Background;
 import javafx.scene.paint.Color;
 import javafx.util.Callback;
@@ -59,6 +58,7 @@ public class UpdaterTool extends ProgramTool {
 
 		TableColumn<StationStatus, String> action = new TableColumn<>( "Action" );
 		//action.setCellValueFactory( new PropertyValueFactory<>( "action" ) );
+		action.setCellFactory( new StationButtonCellFactory() );
 		TableColumn<StationStatus, String> name = new TableColumn<>( "Name" );
 		name.setCellValueFactory( new PropertyValueFactory<>( "name" ) );
 		TableColumn<StationStatus, StepStatus> setup = new TableColumn<>( "Setup" );
@@ -67,60 +67,66 @@ public class UpdaterTool extends ProgramTool {
 		update.setCellValueFactory( new PropertyValueFactory<>( "update" ) );
 		TableColumn<StationStatus, StepStatus> upgrade = new TableColumn<>( "Upgrade" );
 		upgrade.setCellValueFactory( new PropertyValueFactory<>( "upgrade" ) );
+
 		TableColumn<StationStatus, StepStatus> restart = new TableColumn<>( "Restart" );
 		restart.setCellValueFactory( new PropertyValueFactory<>( "restart" ) );
 		restart.setCellFactory( new StepStatusCellFactory() );
 
 		table.getColumns().addAll( List.of( action, name, setup, update, upgrade, restart ) );
-
-		action.setCellFactory( c -> new TableCell<>() {
-
-			final Button btn = new Button( "Start" );
-
-			@Override
-			public void updateItem( String item, boolean empty ) {
-				super.updateItem( item, empty );
-				if( empty ) {
-					setGraphic( null );
-					setText( null );
-				} else {
-					btn.setOnAction( event -> {
-						StationStatus status = getTableView().getItems().get( getIndex() );
-						System.out.println( status.getName() );
-					} );
-					setGraphic( btn );
-					setText( null );
-				}
-			}
-		} );
 	}
 
-	public static class StepStatusCellFactory<S, T> implements Callback<TableColumn<S, T>, TableCell<S, T>> {
+	static class StationButtonCellFactory implements Callback<TableColumn<StationStatus, String>, TableCell<StationStatus, String>> {
 
 		@Override
-		public TableCell<S, T> call( TableColumn<S, T> param ) {
-			TextFieldTableCell<S, T> cell = new TextFieldTableCell<>();
+		public TableCell<StationStatus, String> call( TableColumn<StationStatus, String> param ) {
+			return new TableCell<>() {
 
-			StepStatus status = (StepStatus)param.getCellData( 0 );
-			cell.setBackground( Background.fill( status.color() ) );
+				final Button btn = new Button( "Start" );
 
-			return cell;
+				@Override
+				protected void updateItem( String item, boolean empty ) {
+					super.updateItem( item, empty );
+					if( empty ) {
+						setGraphic( null );
+						setText( null );
+					} else {
+						setGraphic( btn );
+						setText( null );
+						btn.setOnAction( event -> {
+							StationStatus status = getTableView().getItems().get( getIndex() );
+							System.out.println( status.getName() );
+						} );
+					}
+				}
+			};
 		}
 
 	}
 
-	//	public class StepStatusCell<S,T> implements Callback<TableColumn.CellDataFeatures<S,T>, ObservableValue<T>> {
-	//
-	//		@Override
-	//		public ObservableValue<T> call( TableColumn.CellDataFeatures<S, T> param ) {
-	//			return new ReadOnlyObjectWrapper<>( (T)param.getValue() );
-	//		}
-	//
-	//	}
-	//
-	//	private static class StationTableCell extends TableCell<StationStatus, String> {
-	//
-	//	}
+	static class StepStatusCellFactory implements Callback<TableColumn<StationStatus, StepStatus>, TableCell<StationStatus, StepStatus>> {
+
+		@Override
+		public TableCell<StationStatus, StepStatus> call( TableColumn<StationStatus, StepStatus> param ) {
+			return new TableCell<>() {
+
+				@Override
+				protected void updateItem( StepStatus item, boolean empty ) {
+					super.updateItem( item, empty );
+
+					if( item == null || empty ) {
+						setText( null );
+						setBackground( Background.EMPTY );
+					} else {
+						// Format date.
+						setText( item.toString() );
+						setBackground( Background.fill( item.state().color() ) );
+					}
+				}
+			};
+
+		}
+
+	}
 
 	@Data
 	public static class StationStatus {
@@ -129,13 +135,13 @@ public class UpdaterTool extends ProgramTool {
 
 		private InetAddress address;
 
-		private StepStatus setup = new StepStatus();
+		private StepStatus setup = new StepStatus( StepStatus.State.WAITING, new Date() );
 
-		private StepStatus update = new StepStatus();
+		private StepStatus update = new StepStatus( StepStatus.State.WAITING, new Date() );
 
-		private StepStatus upgrade = new StepStatus();
+		private StepStatus upgrade = new StepStatus( StepStatus.State.WAITING, new Date() );
 
-		private StepStatus restart = new StepStatus();
+		private StepStatus restart = new StepStatus( StepStatus.State.WAITING, new Date() );
 
 		public StationStatus( Station station ) {
 			this.name = station.name();
@@ -148,22 +154,23 @@ public class UpdaterTool extends ProgramTool {
 
 	}
 
-	@Data
-	public static class StepStatus {
+	public record StepStatus(State state, Date when) {
 
 		public enum State {
-			WAITING,
-			RUNNING,
-			SUCCESS,
-			FAILURE
-		}
+			WAITING( Color.GRAY ),
+			RUNNING( Color.BLUE ),
+			SUCCESS( Color.GREEN ),
+			FAILURE( Color.RED );
 
-		private State state = State.WAITING;
+			private final Color color;
 
-		private Date when = new Date();
+			State( Color color ) {
+				this.color = color;
+			}
 
-		public Color color() {
-			return Color.GREY;
+			public Color color() {
+				return color;
+			}
 		}
 
 		@Override
