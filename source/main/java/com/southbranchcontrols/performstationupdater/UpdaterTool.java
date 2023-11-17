@@ -9,9 +9,12 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.layout.Background;
+import javafx.scene.paint.Color;
+import javafx.util.Callback;
 import lombok.CustomLog;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -66,6 +69,7 @@ public class UpdaterTool extends ProgramTool {
 		upgrade.setCellValueFactory( new PropertyValueFactory<>( "upgrade" ) );
 		TableColumn<StationStatus, String> restart = new TableColumn<>( "Restart" );
 		restart.setCellValueFactory( new PropertyValueFactory<>( "restart" ) );
+		restart.setCellFactory( new StepStatusCellFactory() );
 
 		table.getColumns().addAll( action, name, setup, update, upgrade, restart );
 
@@ -91,35 +95,80 @@ public class UpdaterTool extends ProgramTool {
 		} );
 	}
 
-	private static class StationTableCell extends TableCell<StationStatus, String> {
+	public static class StepStatusCellFactory<S, T> implements Callback<TableColumn<S, T>, TableCell<S, T>> {
+
+		@Override
+		public TableCell<S, T> call( TableColumn<S, T> param ) {
+			TextFieldTableCell<S, T> cell = new TextFieldTableCell<>();
+
+			StepStatus status = (StepStatus)param.getCellData( 0 );
+			cell.setBackground( Background.fill( status.color() ) );
+
+			return cell;
+		}
 
 	}
 
-	@Getter
-	@Setter
-	public static class StationStatus {
+	//	public class StepStatusCell<S,T> implements Callback<TableColumn.CellDataFeatures<S,T>, ObservableValue<T>> {
+	//
+	//		@Override
+	//		public ObservableValue<T> call( TableColumn.CellDataFeatures<S, T> param ) {
+	//			return new ReadOnlyObjectWrapper<>( (T)param.getValue() );
+	//		}
+	//
+	//	}
+	//
+	//	private static class StationTableCell extends TableCell<StationStatus, String> {
+	//
+	//	}
 
-		protected static final Date EMPTY = new Date( 0 );
+	@Data
+	public static class StationStatus {
 
 		private final String name;
 
 		private InetAddress address;
 
-		private Date setup = EMPTY;
+		private StepStatus setup = new StepStatus();
 
-		private Date update = EMPTY;
+		private StepStatus update = new StepStatus();
 
-		private Date upgrade = EMPTY;
+		private StepStatus upgrade = new StepStatus();
 
-		private Date restart = EMPTY;
+		private StepStatus restart = new StepStatus();
 
 		public StationStatus( Station station ) {
 			this.name = station.name();
 			try {
 				this.address = InetAddress.getByName( station.address() );
 			} catch( UnknownHostException exception ) {
-				log.atWarn().log("Unable to resolve address {}", station.address());
+				log.atWarn().log( "Unable to resolve address {}", station.address() );
 			}
+		}
+
+	}
+
+	@Data
+	public static class StepStatus {
+
+		public enum State {
+			WAITING,
+			RUNNING,
+			SUCCESS,
+			FAILURE
+		}
+
+		private State state = State.WAITING;
+
+		private Date when = new Date();
+
+		public Color color() {
+			return Color.GREY;
+		}
+
+		@Override
+		public String toString() {
+			return state.name();
 		}
 
 	}
