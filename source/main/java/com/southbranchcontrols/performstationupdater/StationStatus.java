@@ -13,6 +13,7 @@ public class StationStatus {
 
 	private final String address;
 
+	// FIXME These need to observable values
 	private StepStatus setup = new StepStatus( StepStatus.State.WAITING, new Date() );
 
 	private StepStatus update = new StepStatus( StepStatus.State.WAITING, new Date() );

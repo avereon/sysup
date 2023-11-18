@@ -1,6 +1,8 @@
 package com.southbranchcontrols.performstationupdater;
 
+import com.avereon.util.IoUtil;
 import com.avereon.xenon.task.Task;
+import com.avereon.zarra.javafx.Fx;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
@@ -13,6 +15,8 @@ import java.io.*;
 @Getter
 @CustomLog
 public class StationUpdater {
+
+	private static final String PERFORM = "perform";
 
 	private final JSch jsch;
 
@@ -45,15 +49,25 @@ public class StationUpdater {
 		if( station.getSetup().state() != StepStatus.State.WAITING ) return;
 
 		getManager().getProgram().getTaskManager().submit( Task.of( () -> {
+			Fx.run( () -> station.setSetup( StepStatus.of( StepStatus.State.RUNNING ) ) );
 			try {
-				// Make sure there is an Updates folder
-				run( station.getAddress(), "mkdir -p $HOME/Updates" );
+				InputStream resourceInput = getClass().getResourceAsStream( "station-update" );
+				ByteArrayOutputStream resourceOutput = new ByteArrayOutputStream();
+				IoUtil.copy( resourceInput, resourceOutput );
+				if( resourceInput != null ) resourceInput.close();
 
-				// FIXME Can't find this file, JSch wants a bunch of meta-data
-				scpPut( station.getAddress(), "station-update", "$HOME/Updates/station-update" );
-				run( station.getAddress(), "chmod a+x -p $HOME/Updates/station-update" );
+				byte[] content = resourceOutput.toByteArray();
+				long filesize = content.length;
+
+				// Make sure there is an Updates folder
+				run( station.getAddress(), "mkdir -p /home/perform/Updates" );
+				scpPut( "station-update", filesize, new ByteArrayInputStream( content ), station.getAddress(), "/home/perform/Updates/station-update" );
+				run( station.getAddress(), "chmod a+x /home/perform/Updates/station-update" );
+
+				// Assuming all of that worked, update the step status
+				Fx.run( () -> station.setSetup( StepStatus.of( StepStatus.State.SUCCESS ) ) );
 			} catch( IOException exception ) {
-				station.setSetup( StepStatus.of( StepStatus.State.FAILURE ) );
+				Fx.run( () -> station.setSetup( StepStatus.of( StepStatus.State.FAILURE ) ) );
 				throw new RuntimeException( exception );
 			}
 		} ) );
@@ -62,7 +76,7 @@ public class StationUpdater {
 	private void run( String address, String command ) throws IOException {
 		try {
 			// Create the shell session
-			Session session = jsch().getSession( "perform", address );
+			Session session = jsch().getSession( PERFORM, address );
 			session.connect( 3000 );
 
 			// Create the execution channel
@@ -96,10 +110,17 @@ public class StationUpdater {
 		}
 	}
 
-	private void scpPut( String address, String sourcePath, String targetPath ) throws IOException {
-		try( FileInputStream fis = new FileInputStream( sourcePath ) ) {
+	private void scpPut( String sourcePath, String address, String targetPath ) throws IOException {
+		File sourceFile = new File( sourcePath );
+		try( FileInputStream fis = new FileInputStream( sourceFile ) ) {
+			scpPut( sourceFile.getName(), sourceFile.length(), fis, address, targetPath );
+		}
+	}
+
+	private void scpPut( String name, long filesize, InputStream sourceInput, String address, String targetPath ) throws IOException {
+		try {
 			// Create the shell session
-			Session session = jsch().getSession( "perform", address );
+			Session session = jsch().getSession( PERFORM, address );
 			session.connect( 3000 );
 
 			// Modify the target path for remote use
@@ -108,7 +129,7 @@ public class StationUpdater {
 
 			// Create the execution channel
 			ChannelExec channel = (ChannelExec)session.openChannel( "exec" );
-			channel.setCommand( "scp -p -t " + targetPath );
+			channel.setCommand( "scp -t " + targetPath );
 
 			// Get the remote I/O streams
 			OutputStream out = channel.getOutputStream();
@@ -119,49 +140,28 @@ public class StationUpdater {
 			log.atInfo().log( "Connected to {0}", address );
 
 			// Check that the remote scp is ready
-			remoteScpCheck( in );
+			targetScpCheck( in );
 
-			File sourceFile = new File( sourcePath );
-
-			// Build the next scp command
-			String command;
-
-			// Add the timestamp information
-			long lastModifiedSeconds = sourceFile.lastModified() / 1000;
-			command = "T " + lastModifiedSeconds + " 0 " + lastModifiedSeconds + " 0\n";
-			out.write( command.getBytes() );
-			out.flush();
-			remoteScpCheck( in );
-
-			// Add the "C0644 filesize filename", filename cannot not include '/'
-			long filesize = sourceFile.length();
-			command = "C0644 " + filesize + " ";
-			if( sourcePath.lastIndexOf( '/' ) > 0 ) {
-				command += sourcePath.substring( sourcePath.lastIndexOf( '/' ) + 1 );
-			} else {
-				command += sourcePath;
-			}
-			command += "\n";
+			// Build the C command
+			String command = "C0644 " + filesize + " " + name + "\n";
 
 			// Send the scp command
 			out.write( command.getBytes() );
 			out.flush();
-			remoteScpCheck( in );
+			targetScpCheck( in );
 
 			// Send the content of the source file
 			byte[] buffer = new byte[ 1024 ];
-			int length = fis.read( buffer );
+			int length = sourceInput.read( buffer );
 			while( length > -1 ) {
 				out.write( buffer, 0, length );
-				length = fis.read( buffer );
+				length = sourceInput.read( buffer );
 			}
 			out.write( 0 );
-			out.flush();
-			remoteScpCheck( in );
 			out.close();
+			targetScpCheck( in );
 
 			log.atDebug().log( "exit-status: {0}", channel.getExitStatus() );
-
 			log.atConfig().log( "Disconnecting from {0} ...", address );
 			channel.disconnect();
 			session.disconnect();
@@ -171,12 +171,11 @@ public class StationUpdater {
 		}
 	}
 
-	private static int remoteScpCheck( InputStream in ) throws IOException {
+	private static int targetScpCheck( InputStream in ) throws IOException {
 		// b may be
-		//   0 for success,
-		//   1 for error,
-		//   2 for fatal error,
-		//  -1 end of stream
+		//   -1 or 0 for success
+		//   1 for error
+		//   2 for fatal error
 		int b = in.read();
 
 		// Get the error message
