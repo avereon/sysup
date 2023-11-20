@@ -2,5 +2,6 @@
 
 echo "Starting update..."
 
+#neofetch && sudo apt -y update && sudo apt -y dist-upgrade && sudo apt -y autoremove && sudo apt -y clean
 
 echo "Update finished."

@@ -24,6 +24,8 @@ public class StationStatus {
 
 	private final SimpleObjectProperty<StepStatus> restartStatusProperty;
 
+	private final SimpleObjectProperty<StepStatus> aliveStatusProperty;
+
 	public StationStatus( Station station ) {
 		this.name = station.name();
 		this.address = station.address();
@@ -31,6 +33,7 @@ public class StationStatus {
 		this.updateStatusProperty = new SimpleObjectProperty<>( new StepStatus( StepStatus.State.WAITING, new Date() ) );
 		this.upgradeStatusProperty = new SimpleObjectProperty<>( new StepStatus( StepStatus.State.WAITING, new Date() ) );
 		this.restartStatusProperty = new SimpleObjectProperty<>( new StepStatus( StepStatus.State.WAITING, new Date() ) );
+		this.aliveStatusProperty = new SimpleObjectProperty<>( new StepStatus( StepStatus.State.WAITING, new Date() ) );
 	}
 
 	public ReadOnlyObjectProperty<StepStatus> setupStatusProperty() {
@@ -61,7 +64,7 @@ public class StationStatus {
 		return upgradeStatusProperty;
 	}
 
-	public StepStatus getUpgraceStatus() {
+	public StepStatus getUpgradeStatus() {
 		return upgradeStatusProperty.get();
 	}
 
@@ -79,6 +82,18 @@ public class StationStatus {
 
 	public void setRestartStatus( StepStatus status) {
 		restartStatusProperty.set( status );
+	}
+
+	public ReadOnlyObjectProperty<StepStatus> aliveStatusProperty() {
+		return aliveStatusProperty;
+	}
+
+	public StepStatus getAliveStatus() {
+		return aliveStatusProperty.get();
+	}
+
+	public void setAliveStatus( StepStatus status) {
+		aliveStatusProperty.set( status );
 	}
 
 }

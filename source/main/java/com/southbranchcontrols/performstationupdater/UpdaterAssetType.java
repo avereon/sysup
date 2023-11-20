@@ -68,7 +68,7 @@ public class UpdaterAssetType extends AssetType {
 				}
 			}
 
-			asset.setModel( stations.stream().map( Station::of ).toList() );
+			asset.setModel( stations.stream().filter( l -> l.size() > 1 ).map( Station::of ).toList() );
 		} catch( CsvValidationException | IOException | NullPointerException exception ) {
 			throw new AssetException( asset, "Error loading station data", exception );
 		}

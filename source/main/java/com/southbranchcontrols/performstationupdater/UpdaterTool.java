@@ -26,11 +26,9 @@ public class UpdaterTool extends ProgramTool {
 		getStyleClass().addAll( "updater-tool" );
 		setIcon( "updater" );
 
-		// Initial design thoughts:
-		// - Show a table with each of the stations and the "known" update state
-		// - Might need to store the last known state because the state can not need to be queried easily
-
 		table = new TableView<>();
+		table.setColumnResizePolicy( TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN );
+
 		ScrollPane scroller = new ScrollPane( table );
 		scroller.setFitToWidth( true );
 		getChildren().addAll( scroller );
@@ -68,8 +66,11 @@ public class UpdaterTool extends ProgramTool {
 		TableColumn<StationStatus, StepStatus> restart = new TableColumn<>( "Restart" );
 		restart.setCellValueFactory( new PropertyValueFactory<>( "restartStatus" ) );
 		restart.setCellFactory( new StepStatusCellFactory() );
+		TableColumn<StationStatus, StepStatus> alive = new TableColumn<>( "Restarted" );
+		alive.setCellValueFactory( new PropertyValueFactory<>( "aliveStatus" ) );
+		alive.setCellFactory( new StepStatusCellFactory() );
 
-		table.getColumns().addAll( List.of( action, name, setup, update, upgrade, restart ) );
+		table.getColumns().addAll( List.of( action, name, setup, update, upgrade, restart, alive ) );
 	}
 
 	class StationButtonCellFactory implements Callback<TableColumn<StationStatus, String>, TableCell<StationStatus, String>> {

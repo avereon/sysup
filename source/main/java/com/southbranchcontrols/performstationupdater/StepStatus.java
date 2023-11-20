@@ -7,19 +7,27 @@ import java.util.Date;
 public record StepStatus(State state, Date when) {
 
 	public enum State {
-		WAITING( Color.TRANSPARENT ),
-		RUNNING( Color.BLUE ),
-		SUCCESS( Color.GREEN ),
-		FAILURE( Color.RED );
+		WAITING( "", null ),
+		RUNNING( "Running", Color.BLUE ),
+		SUCCESS( "Success", Color.GREEN ),
+		FAILURE( "Failure", Color.RED );
+
+		private final String text;
 
 		private final Color color;
 
-		State( Color color ) {
+		State( String name, Color color ) {
+			this.text = name;
 			this.color = color;
 		}
 
 		public Color color() {
 			return color;
+		}
+
+		@Override
+		public String toString() {
+			return text;
 		}
 	}
 
@@ -29,7 +37,7 @@ public record StepStatus(State state, Date when) {
 
 	@Override
 	public String toString() {
-		return state.name();
+		return state.toString();
 	}
 
 }

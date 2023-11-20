@@ -1,6 +1,7 @@
 package com.southbranchcontrols.performstationupdater;
 
 import com.avereon.util.IoUtil;
+import com.avereon.util.ThreadUtil;
 import com.avereon.xenon.task.Task;
 import com.avereon.zarra.javafx.Fx;
 import com.jcraft.jsch.ChannelExec;
@@ -11,12 +12,18 @@ import lombok.CustomLog;
 import lombok.Getter;
 
 import java.io.*;
+import java.net.*;
+import java.util.concurrent.TimeoutException;
 
 @Getter
 @CustomLog
 public class StationUpdater {
 
 	private static final String PERFORM = "perform";
+
+	private static final int CONNECT_TIMEOUT = 5000;
+
+	private static final int RESTART_TIMEOUT = 120000;
 
 	private final JSch jsch;
 
@@ -48,7 +55,7 @@ public class StationUpdater {
 	private void setup( StationStatus station ) {
 		if( station.getSetupStatus().state() != StepStatus.State.WAITING ) return;
 
-		getManager().getProgram().getTaskManager().submit( Task.of( () -> {
+		getManager().getProgram().getTaskManager().submit( Task.of( "Perform station " + station.getAddress() + " setup", () -> {
 			Fx.run( () -> station.setSetupStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
 			try {
 				InputStream resourceInput = getClass().getResourceAsStream( "station-update" );
@@ -59,15 +66,101 @@ public class StationUpdater {
 				byte[] content = resourceOutput.toByteArray();
 				long filesize = content.length;
 
-				// Make sure there is an Updates folder
-				run( station.getAddress(), "mkdir -p /home/perform/Updates" );
-				scpPut( "station-update", filesize, new ByteArrayInputStream( content ), station.getAddress(), "/home/perform/Updates/station-update" );
-				run( station.getAddress(), "chmod a+x /home/perform/Updates/station-update" );
+				run( station.getAddress(), "sudo apt -y autoremove" );
+				//				// Make sure there is an Updates folder
+				//				run( station.getAddress(), "mkdir -p /home/perform/Updates" );
+				//				scpPut( "station-update", filesize, new ByteArrayInputStream( content ), station.getAddress(), "/home/perform/Updates/station-update" );
+				//				run( station.getAddress(), "chmod a+x /home/perform/Updates/station-update" );
 
 				// Assuming all of that worked, update the step status
 				Fx.run( () -> station.setSetupStatus( StepStatus.of( StepStatus.State.SUCCESS ) ) );
+				update( station );
 			} catch( IOException exception ) {
 				Fx.run( () -> station.setSetupStatus( StepStatus.of( StepStatus.State.FAILURE ) ) );
+				throw new RuntimeException( exception );
+			}
+		} ) );
+	}
+
+	private void update( StationStatus station ) {
+		if( station.getUpdateStatus().state() != StepStatus.State.WAITING ) return;
+
+		getManager().getProgram().getTaskManager().submit( Task.of( "Perform station " + station.getAddress() + " update", () -> {
+			Fx.run( () -> station.setUpdateStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
+			try {
+				run( station.getAddress(), "sudo apt -y update" );
+
+				// Assuming all of that worked, update the step status
+				Fx.run( () -> station.setUpdateStatus( StepStatus.of( StepStatus.State.SUCCESS ) ) );
+				upgrade( station );
+			} catch( IOException exception ) {
+				Fx.run( () -> station.setUpdateStatus( StepStatus.of( StepStatus.State.FAILURE ) ) );
+				throw new RuntimeException( exception );
+			}
+		} ) );
+	}
+
+	private void upgrade( StationStatus station ) {
+		if( station.getUpgradeStatus().state() != StepStatus.State.WAITING ) return;
+
+		getManager().getProgram().getTaskManager().submit( Task.of( "Perform station " + station.getAddress() + " upgrade", () -> {
+			Fx.run( () -> station.setUpgradeStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
+			try {
+				run( station.getAddress(), "sudo apt -y dist-upgrade" );
+
+				// Assuming all of that worked, update the step status
+				Fx.run( () -> station.setUpgradeStatus( StepStatus.of( StepStatus.State.SUCCESS ) ) );
+				restart( station );
+			} catch( IOException exception ) {
+				Fx.run( () -> station.setUpgradeStatus( StepStatus.of( StepStatus.State.FAILURE ) ) );
+				throw new RuntimeException( exception );
+			}
+		} ) );
+	}
+
+	private void restart( StationStatus station ) {
+		if( station.getRestartStatus().state() != StepStatus.State.WAITING ) return;
+
+		getManager().getProgram().getTaskManager().submit( Task.of( "Perform station " + station.getAddress() + " restart", () -> {
+			Fx.run( () -> station.setRestartStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
+			try {
+				run( station.getAddress(), "sudo reboot; exit;" );
+
+				// Wait a few seconds for the station to shut down before continuing
+				// Otherwise, it is immediately reachable, which is not what we want
+				ThreadUtil.pause( 10000 );
+
+				// Assuming all of that worked, update the step status
+				Fx.run( () -> station.setRestartStatus( StepStatus.of( StepStatus.State.SUCCESS ) ) );
+				isAlive( station );
+			} catch( IOException exception ) {
+				Fx.run( () -> station.setRestartStatus( StepStatus.of( StepStatus.State.FAILURE ) ) );
+				throw new RuntimeException( exception );
+			}
+		} ) );
+	}
+
+	private void isAlive( StationStatus station ) {
+		if( station.getAliveStatus().state() != StepStatus.State.WAITING ) return;
+
+		getManager().getProgram().getTaskManager().submit( Task.of( "Perform station " + station.getAddress() + " respond", () -> {
+			Fx.run( () -> station.setAliveStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
+			try {
+				long threshold = System.currentTimeMillis() + RESTART_TIMEOUT;
+				boolean isTimeout = System.currentTimeMillis() > threshold;
+				while( !isTimeout ) {
+					if( isReachable( station.getAddress(), 22 ) ) break;
+					ThreadUtil.pause( 1000 );
+					isTimeout = System.currentTimeMillis() > threshold;
+				}
+
+				if( isTimeout ) throw new TimeoutException();
+
+				// Assuming all of that worked, update the step status
+				Fx.run( () -> station.setAliveStatus( StepStatus.of( StepStatus.State.SUCCESS ) ) );
+				//checkThatItCameBack( station );
+			} catch( IOException | TimeoutException exception ) {
+				Fx.run( () -> station.setAliveStatus( StepStatus.of( StepStatus.State.FAILURE ) ) );
 				throw new RuntimeException( exception );
 			}
 		} ) );
@@ -77,7 +170,7 @@ public class StationUpdater {
 		try {
 			// Create the shell session
 			Session session = jsch().getSession( PERFORM, address );
-			session.connect( 3000 );
+			session.connect( CONNECT_TIMEOUT );
 
 			// Create the execution channel
 			ChannelExec channel = (ChannelExec)session.openChannel( "exec" );
@@ -121,7 +214,7 @@ public class StationUpdater {
 		try {
 			// Create the shell session
 			Session session = jsch().getSession( PERFORM, address );
-			session.connect( 3000 );
+			session.connect( CONNECT_TIMEOUT );
 
 			// Modify the target path for remote use
 			targetPath = targetPath.replace( "'", "'\"'\"'" );
@@ -190,6 +283,44 @@ public class StationUpdater {
 		}
 
 		return b;
+	}
+
+	private boolean isReachable( String name, int... ports ) throws IOException {
+		int timeout = 250;
+		try {
+			InetAddress address = InetAddress.getByName( name );
+
+			if( ping( address, timeout, ports.length == 0 ) ) return true;
+
+			for( int port : ports ) {
+				if( reach( address, port, timeout ) ) return true;
+			}
+		} catch( UnknownHostException exception ) {
+			log.atDebug().log( "%s unknown host", this );
+		}
+
+		return false;
+	}
+
+	private static boolean ping( InetAddress address, int timeout, boolean noPorts ) throws IOException {
+		try {
+			if( address.isReachable( timeout ) ) return true;
+		} catch( IOException exception ) {
+			if( noPorts ) throw exception;
+		}
+		return false;
+	}
+
+	private boolean reach( InetAddress address, int port, int timeout ) throws IOException {
+		try( Socket socket = new Socket() ) {
+			socket.connect( new InetSocketAddress( address, port ), timeout );
+			return true;
+		} catch( SocketTimeoutException exception ) {
+			log.atDebug().log( "%s connection timeout", this );
+		} catch( ConnectException exception ) {
+			log.atWarn().log( "%s %s", this, exception.getMessage().toLowerCase() );
+		}
+		return false;
 	}
 
 }
