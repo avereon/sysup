@@ -57,16 +57,16 @@ public class UpdaterTool extends ProgramTool {
 		TableColumn<StationStatus, String> name = new TableColumn<>( "Name" );
 		name.setCellValueFactory( new PropertyValueFactory<>( "name" ) );
 		TableColumn<StationStatus, StepStatus> setup = new TableColumn<>( "Setup" );
-		setup.setCellValueFactory( new PropertyValueFactory<>( "setup" ) );
+		setup.setCellValueFactory( new PropertyValueFactory<>( "setupStatus" ) );
 		setup.setCellFactory( new StepStatusCellFactory() );
 		TableColumn<StationStatus, StepStatus> update = new TableColumn<>( "Update" );
-		update.setCellValueFactory( new PropertyValueFactory<>( "update" ) );
+		update.setCellValueFactory( new PropertyValueFactory<>( "updateStatus" ) );
 		update.setCellFactory( new StepStatusCellFactory() );
 		TableColumn<StationStatus, StepStatus> upgrade = new TableColumn<>( "Upgrade" );
-		upgrade.setCellValueFactory( new PropertyValueFactory<>( "upgrade" ) );
+		upgrade.setCellValueFactory( new PropertyValueFactory<>( "upgradeStatus" ) );
 		upgrade.setCellFactory( new StepStatusCellFactory() );
 		TableColumn<StationStatus, StepStatus> restart = new TableColumn<>( "Restart" );
-		restart.setCellValueFactory( new PropertyValueFactory<>( "restart" ) );
+		restart.setCellValueFactory( new PropertyValueFactory<>( "restartStatus" ) );
 		restart.setCellFactory( new StepStatusCellFactory() );
 
 		table.getColumns().addAll( List.of( action, name, setup, update, upgrade, restart ) );

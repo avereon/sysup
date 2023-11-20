@@ -46,10 +46,10 @@ public class StationUpdater {
 	}
 
 	private void setup( StationStatus station ) {
-		if( station.getSetup().state() != StepStatus.State.WAITING ) return;
+		if( station.getSetupStatus().state() != StepStatus.State.WAITING ) return;
 
 		getManager().getProgram().getTaskManager().submit( Task.of( () -> {
-			Fx.run( () -> station.setSetup( StepStatus.of( StepStatus.State.RUNNING ) ) );
+			Fx.run( () -> station.setSetupStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
 			try {
 				InputStream resourceInput = getClass().getResourceAsStream( "station-update" );
 				ByteArrayOutputStream resourceOutput = new ByteArrayOutputStream();
@@ -65,9 +65,9 @@ public class StationUpdater {
 				run( station.getAddress(), "chmod a+x /home/perform/Updates/station-update" );
 
 				// Assuming all of that worked, update the step status
-				Fx.run( () -> station.setSetup( StepStatus.of( StepStatus.State.SUCCESS ) ) );
+				Fx.run( () -> station.setSetupStatus( StepStatus.of( StepStatus.State.SUCCESS ) ) );
 			} catch( IOException exception ) {
-				Fx.run( () -> station.setSetup( StepStatus.of( StepStatus.State.FAILURE ) ) );
+				Fx.run( () -> station.setSetupStatus( StepStatus.of( StepStatus.State.FAILURE ) ) );
 				throw new RuntimeException( exception );
 			}
 		} ) );

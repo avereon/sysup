@@ -1,35 +1,84 @@
 package com.southbranchcontrols.performstationupdater;
 
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import lombok.CustomLog;
-import lombok.Data;
+import lombok.Getter;
 
 import java.util.Date;
 
-@Data
 @CustomLog
 public class StationStatus {
 
+	@Getter
 	private final String name;
 
+	@Getter
 	private final String address;
 
-	// FIXME These need to observable values
-	private StepStatus setup = new StepStatus( StepStatus.State.WAITING, new Date() );
+	private final SimpleObjectProperty<StepStatus> setupStatusProperty;
 
-	private StepStatus update = new StepStatus( StepStatus.State.WAITING, new Date() );
+	private final SimpleObjectProperty<StepStatus> updateStatusProperty;
 
-	private StepStatus upgrade = new StepStatus( StepStatus.State.WAITING, new Date() );
+	private final SimpleObjectProperty<StepStatus> upgradeStatusProperty;
 
-	private StepStatus restart = new StepStatus( StepStatus.State.WAITING, new Date() );
+	private final SimpleObjectProperty<StepStatus> restartStatusProperty;
 
 	public StationStatus( Station station ) {
 		this.name = station.name();
 		this.address = station.address();
-//		try {
-//			this.address = InetAddress.getByName( station.address() );
-//		} catch( UnknownHostException exception ) {
-//			log.atWarn().log( "Unable to resolve address {0}", station.address() );
-//		}
+		this.setupStatusProperty = new SimpleObjectProperty<>( new StepStatus( StepStatus.State.WAITING, new Date() ) );
+		this.updateStatusProperty = new SimpleObjectProperty<>( new StepStatus( StepStatus.State.WAITING, new Date() ) );
+		this.upgradeStatusProperty = new SimpleObjectProperty<>( new StepStatus( StepStatus.State.WAITING, new Date() ) );
+		this.restartStatusProperty = new SimpleObjectProperty<>( new StepStatus( StepStatus.State.WAITING, new Date() ) );
+	}
+
+	public ReadOnlyObjectProperty<StepStatus> setupStatusProperty() {
+		return setupStatusProperty;
+	}
+
+	public StepStatus getSetupStatus() {
+		return setupStatusProperty.get();
+	}
+
+	public void setSetupStatus( StepStatus status) {
+		setupStatusProperty.set( status );
+	}
+
+	public ReadOnlyObjectProperty<StepStatus> updateStatusProperty() {
+		return updateStatusProperty;
+	}
+
+	public StepStatus getUpdateStatus() {
+		return updateStatusProperty.get();
+	}
+
+	public void setUpdateStatus( StepStatus status) {
+		updateStatusProperty.set( status );
+	}
+
+	public ReadOnlyObjectProperty<StepStatus> upgradeStatusProperty() {
+		return upgradeStatusProperty;
+	}
+
+	public StepStatus getUpgraceStatus() {
+		return upgradeStatusProperty.get();
+	}
+
+	public void setUpgradeStatus( StepStatus status) {
+		upgradeStatusProperty.set( status );
+	}
+
+	public ReadOnlyObjectProperty<StepStatus> restartStatusProperty() {
+		return restartStatusProperty;
+	}
+
+	public StepStatus getRestartStatus() {
+		return restartStatusProperty.get();
+	}
+
+	public void setRestartStatus( StepStatus status) {
+		restartStatusProperty.set( status );
 	}
 
 }
