@@ -92,8 +92,7 @@ public class UpdaterTool extends ProgramTool {
 						setText( null );
 						btn.setOnAction( event -> {
 							StationStatus station = getTableView().getItems().get( getIndex() );
-							//System.out.println( station.getName() );
-							((UpdaterMod)getProduct()).getStationUpdateManager().getUpdater( station ).next();
+							((UpdaterMod)getProduct()).getStationUpdateManager().getUpdater( station ).run();
 						} );
 					}
 				}

@@ -23,6 +23,8 @@ public class StationUpdater {
 
 	private static final int CONNECT_TIMEOUT = 5000;
 
+	private static final int RESTART_PAUSE = 8000;
+
 	private static final int RESTART_TIMEOUT = 120000;
 
 	private final JSch jsch;
@@ -42,8 +44,17 @@ public class StationUpdater {
 		return updater;
 	}
 
-	public void next() {
+	public void run() {
+		if( isRunning() ) return;
+		station.reset();
 		setup( station );
+	}
+
+	private boolean isRunning() {
+		for( StepStatus step : station.getSteps() ) {
+			if( step.state() == StepStatus.State.RUNNING ) return true;
+		}
+		return false;
 	}
 
 	private JSch jsch() throws JSchException {
@@ -128,7 +139,7 @@ public class StationUpdater {
 
 				// Wait a few seconds for the station to shut down before continuing
 				// Otherwise, it is immediately reachable, which is not what we want
-				ThreadUtil.pause( 10000 );
+				ThreadUtil.pause( RESTART_PAUSE / 2 );
 
 				// Assuming all of that worked, update the step status
 				Fx.run( () -> station.setRestartStatus( StepStatus.of( StepStatus.State.SUCCESS ) ) );
@@ -146,6 +157,10 @@ public class StationUpdater {
 		getManager().getProgram().getTaskManager().submit( Task.of( "Perform station " + station.getAddress() + " respond", () -> {
 			Fx.run( () -> station.setAliveStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
 			try {
+				// Wait a few seconds for the station to shut down before continuing
+				// Otherwise, it is immediately reachable, which is not what we want
+				ThreadUtil.pause( RESTART_PAUSE / 2 );
+
 				long threshold = System.currentTimeMillis() + RESTART_TIMEOUT;
 				boolean isTimeout = System.currentTimeMillis() > threshold;
 				while( !isTimeout ) {

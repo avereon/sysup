@@ -5,7 +5,9 @@ import javafx.beans.property.SimpleObjectProperty;
 import lombok.CustomLog;
 import lombok.Getter;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @CustomLog
 public class StationStatus {
@@ -34,6 +36,26 @@ public class StationStatus {
 		this.upgradeStatusProperty = new SimpleObjectProperty<>( new StepStatus( StepStatus.State.WAITING, new Date() ) );
 		this.restartStatusProperty = new SimpleObjectProperty<>( new StepStatus( StepStatus.State.WAITING, new Date() ) );
 		this.aliveStatusProperty = new SimpleObjectProperty<>( new StepStatus( StepStatus.State.WAITING, new Date() ) );
+	}
+
+	public List<StepStatus> getSteps() {
+		List<StepStatus> steps = new ArrayList<>();
+
+		steps.add( setupStatusProperty.get() );
+		steps.add( updateStatusProperty.get() );
+		steps.add( upgradeStatusProperty.get() );
+		steps.add( restartStatusProperty.get() );
+		steps.add( aliveStatusProperty.get() );
+
+		return steps;
+	}
+
+	public void reset() {
+		setupStatusProperty.set(new StepStatus( StepStatus.State.WAITING, new Date()));
+		updateStatusProperty.set(new StepStatus( StepStatus.State.WAITING, new Date()));
+		upgradeStatusProperty.set(new StepStatus( StepStatus.State.WAITING, new Date()));
+		restartStatusProperty.set(new StepStatus( StepStatus.State.WAITING, new Date()));
+		aliveStatusProperty.set(new StepStatus( StepStatus.State.WAITING, new Date()));
 	}
 
 	public ReadOnlyObjectProperty<StepStatus> setupStatusProperty() {
