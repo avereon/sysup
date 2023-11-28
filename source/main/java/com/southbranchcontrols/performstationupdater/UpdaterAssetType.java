@@ -25,21 +25,21 @@ import java.util.Objects;
 @CustomLog
 public class UpdaterAssetType extends AssetType {
 
-	private static final String uriPattern = "perform:updater";
+	private static final String URI_PATTERN = "perform:updater";
 
-	public static final java.net.URI URI = java.net.URI.create( uriPattern );
+	public static final java.net.URI URI = java.net.URI.create( URI_PATTERN );
 
 	public UpdaterAssetType( XenonProgramProduct product ) {
 		super( product, "updater" );
 
 		PlaceholderCodec codec = new PlaceholderCodec();
-		codec.addSupported( Codec.Pattern.URI, uriPattern );
+		codec.addSupported( Codec.Pattern.URI, URI_PATTERN );
 		setDefaultCodec( codec );
 	}
 
 	@Override
 	public String getKey() {
-		return uriPattern;
+		return URI_PATTERN;
 	}
 
 	@Override
@@ -48,7 +48,7 @@ public class UpdaterAssetType extends AssetType {
 		asset.setName( Rb.text( RbKey.ASSET, "updater-name" ) );
 
 		// Setting the scheme when the asset is opened solves a bunch of "new" asset problems
-		asset.setScheme( program.getAssetManager().getScheme( PerformScheme.ID ) );
+		asset.setScheme( program.getAssetManager().getScheme( URI.getScheme() ) );
 
 		// Load the station data
 		loadData( asset );
