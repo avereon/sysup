@@ -12,7 +12,7 @@ public class UpdaterMod extends Mod {
 
 	public static final String STYLESHEET = "mod.css";
 
-	private UpdaterAssetType updaterAssetType;
+	private PerformStationsAssetType performStationsAssetType;
 
 	@Getter
 	private StationUpdateManager stationUpdateManager;
@@ -30,10 +30,14 @@ public class UpdaterMod extends Mod {
 
 		getProgram().getAssetManager().addScheme( new PerformScheme( getProgram() ) );
 
-		registerAssetType( updaterAssetType = new UpdaterAssetType( this ) );
+		// Register the asset type
+		performStationsAssetType = new PerformStationsAssetType( this );
+		registerAssetType( performStationsAssetType );
+
+		// Register the updater tool
 		ToolRegistration design2dEditorRegistration = new ToolRegistration( this, UpdaterTool.class );
 		design2dEditorRegistration.setName( "Perform Station Updater Tool" );
-		registerTool( updaterAssetType, design2dEditorRegistration );
+		registerTool( performStationsAssetType, design2dEditorRegistration );
 
 		stationUpdateManager = new StationUpdateManager( getProgram() ).start();
 	}
@@ -42,8 +46,8 @@ public class UpdaterMod extends Mod {
 	public void shutdown() throws Exception {
 		stationUpdateManager.stop();
 
-		unregisterTool( updaterAssetType, UpdaterTool.class );
-		unregisterAssetType( updaterAssetType );
+		unregisterTool( performStationsAssetType, UpdaterTool.class );
+		unregisterAssetType( performStationsAssetType );
 
 		getProgram().getAssetManager().removeScheme( PerformScheme.ID );
 

@@ -31,14 +31,15 @@ public class UpdaterTool extends ProgramTool {
 
 		ScrollPane scroller = new ScrollPane( table );
 		scroller.setFitToWidth( true );
+		scroller.setFitToHeight( true );
 		getChildren().addAll( scroller );
 	}
 
 	@Override
 	protected void ready( OpenAssetRequest request ) throws ToolException {
 		super.ready( request );
-		//setTitle( request.getAsset().getName() );
-		setTitle( "Station Updater" );
+		setTitle( request.getAsset().getName() );
+		//setTitle( "Station Updater" );
 
 		// The stations model from the asset
 		Asset asset = request.getAsset();
