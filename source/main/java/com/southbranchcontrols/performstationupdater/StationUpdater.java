@@ -4,21 +4,27 @@ import com.avereon.util.IoUtil;
 import com.avereon.util.ThreadUtil;
 import com.avereon.xenon.task.Task;
 import com.avereon.zarra.javafx.Fx;
-import com.jcraft.jsch.*;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
 import lombok.CustomLog;
 import lombok.Getter;
 
 import java.io.*;
 import java.net.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
 
 @Getter
 @CustomLog
 public class StationUpdater {
 
-	private static final String PERFORM = "perform";
-
 	private static final int CONNECT_TIMEOUT = 5000;
+
+	private static final int CHANNEL_TIMEOUT = 3600000;
 
 	private static final int RESTART_PAUSE = 8000;
 
@@ -55,15 +61,13 @@ public class StationUpdater {
 	}
 
 	private JSch jsch() throws JSchException {
-		JSch.setConfig( "StrictHostKeyChecking", "no" );
+		JSch.setConfig( "StrictHostKeyChecking", "yes" );
+		JSch.setConfig( "HashKnownHosts", "yes" );
+		JSch.setLogger( new JschLogger() );
 
 		JSch jsch = new JSch();
-
-		jsch.removeAllIdentity();
 		jsch.addIdentity( System.getProperty( "user.home" ) + "/.ssh/id_rsa" );
 		jsch.setKnownHosts( System.getProperty( "user.home" ) + "/.ssh/known_hosts" );
-
-		HostKeyRepository hkr = jsch.getHostKeyRepository();
 
 		return jsch;
 	}
@@ -200,7 +204,7 @@ public class StationUpdater {
 			//channel.setErrStream( System.err );
 
 			log.atConfig().log( "Connecting to {0} ...", station.getAddress() );
-			channel.connect();
+			channel.connect( CHANNEL_TIMEOUT );
 			log.atInfo().log( "Connected to {0}", station.getAddress() );
 
 			// Read the input buffer
@@ -212,7 +216,8 @@ public class StationUpdater {
 					if( i < 0 ) break;
 				}
 			}
-			log.atDebug().log( "exit-status: {0}", channel.getExitStatus() );
+			int exitStatus = channel.getExitStatus();
+			if( exitStatus != 0 ) log.atDebug().log( "exit-status: {0} > {1}", exitStatus, command );
 
 			log.atConfig().log( "Disconnecting from {0} ...", station.getAddress() );
 			channel.disconnect();
@@ -341,6 +346,28 @@ public class StationUpdater {
 			log.atWarn().log( "%s %s", this, exception.getMessage().toLowerCase() );
 		}
 		return false;
+	}
+
+	private static class JschLogger implements com.jcraft.jsch.Logger {
+
+		static Map<Integer, java.util.logging.Level> name = new HashMap<>();
+
+		static {
+			name.put( DEBUG, Level.FINE );
+			name.put( INFO, Level.CONFIG );
+			name.put( WARN, Level.WARNING );
+			name.put( ERROR, Level.SEVERE );
+			name.put( FATAL, Level.SEVERE );
+		}
+
+		public boolean isEnabled( int level ) {
+			return true;
+		}
+
+		public void log( int level, String message ) {
+			log.at( name.get( level ) ).log( message );
+		}
+
 	}
 
 }
