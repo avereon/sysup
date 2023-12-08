@@ -13,10 +13,7 @@ import java.util.List;
 public class StationStatus {
 
 	@Getter
-	private final String name;
-
-	@Getter
-	private final String address;
+	private final Station station;
 
 	private final SimpleObjectProperty<StepStatus> setupStatusProperty;
 
@@ -29,8 +26,7 @@ public class StationStatus {
 	private final SimpleObjectProperty<StepStatus> aliveStatusProperty;
 
 	public StationStatus( Station station ) {
-		this.name = station.name();
-		this.address = station.address();
+		this.station = station;
 		this.setupStatusProperty = new SimpleObjectProperty<>( new StepStatus( StepStatus.State.WAITING, new Date() ) );
 		this.updateStatusProperty = new SimpleObjectProperty<>( new StepStatus( StepStatus.State.WAITING, new Date() ) );
 		this.upgradeStatusProperty = new SimpleObjectProperty<>( new StepStatus( StepStatus.State.WAITING, new Date() ) );

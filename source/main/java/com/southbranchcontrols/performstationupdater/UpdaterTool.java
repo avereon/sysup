@@ -54,7 +54,7 @@ public class UpdaterTool extends ProgramTool {
 		//action.setCellValueFactory( new PropertyValueFactory<>( "action" ) );
 		action.setCellFactory( new StationButtonCellFactory() );
 		TableColumn<StationStatus, String> name = new TableColumn<>( "Name" );
-		name.setCellValueFactory( new PropertyValueFactory<>( "name" ) );
+		name.setCellValueFactory( new PropertyValueFactory<>( "station" ) );
 		TableColumn<StationStatus, StepStatus> setup = new TableColumn<>( "Setup" );
 		setup.setCellValueFactory( new PropertyValueFactory<>( "setupStatus" ) );
 		setup.setCellFactory( new StepStatusCellFactory() );
