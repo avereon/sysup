@@ -61,13 +61,12 @@ public class StationUpdater {
 	}
 
 	private JSch jsch() throws JSchException {
-		JSch.setConfig( "StrictHostKeyChecking", "yes" );
-		JSch.setConfig( "HashKnownHosts", "yes" );
+		JSch.setConfig( "StrictHostKeyChecking", "no" );
 		JSch.setLogger( new JschLogger() );
 
 		JSch jsch = new JSch();
 		jsch.addIdentity( System.getProperty( "user.home" ) + "/.ssh/id_rsa" );
-		jsch.setKnownHosts( System.getProperty( "user.home" ) + "/.ssh/known_hosts" );
+		jsch.setKnownHosts( getManager().getProduct().getDataFolder() + "/known_hosts" );
 
 		return jsch;
 	}
@@ -193,7 +192,7 @@ public class StationUpdater {
 	private void run( Station station, String command ) throws IOException {
 		try {
 			// Create the shell session
-			Session session = jsch().getSession( station.getUser(), station.getAddress() );
+			Session session = jsch().getSession( station.getAddress() );
 			session.connect( CONNECT_TIMEOUT );
 
 			// Create the execution channel

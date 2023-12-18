@@ -12,10 +12,14 @@ public final class StationUpdateManager implements Controllable<StationUpdateMan
 	@Getter
 	private final Xenon program;
 
+	@Getter
+	private final UpdaterMod product;
+
 	private final Map<StationStatus, StationUpdater> updaters;
 
-	public StationUpdateManager( Xenon program ) {
-		this.program = program;
+	public StationUpdateManager( UpdaterMod product ) {
+		this.program = product.getProgram();
+		this.product = product;
 		this.updaters = new ConcurrentHashMap<>();
 	}
 

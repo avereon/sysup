@@ -39,7 +39,7 @@ public class UpdaterMod extends Mod {
 		design2dEditorRegistration.setName( "Perform Station Updater Tool" );
 		registerTool( performStationsAssetType, design2dEditorRegistration );
 
-		stationUpdateManager = new StationUpdateManager( getProgram() ).start();
+		stationUpdateManager = new StationUpdateManager( this ).start();
 	}
 
 	@Override
