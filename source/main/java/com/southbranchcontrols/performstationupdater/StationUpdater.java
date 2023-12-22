@@ -192,7 +192,7 @@ public class StationUpdater {
 	private void run( Station station, String command ) throws IOException {
 		try {
 			// Create the shell session
-			Session session = jsch().getSession( station.getAddress() );
+			Session session = jsch().getSession(station.getUser(), station.getAddress() );
 			session.connect( CONNECT_TIMEOUT );
 
 			// Create the execution channel

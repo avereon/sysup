@@ -10,7 +10,7 @@ module com.southbranchcontrols.performstationupdater {
 	requires com.opencsv;
 	requires java.logging;
 	requires java.management;
-	requires jsch;
+	requires com.jcraft.jsch;
 
 	opens com.southbranchcontrols.performstationupdater;
 	opens com.southbranchcontrols.performstationupdater.bundles;
