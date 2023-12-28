@@ -15,6 +15,7 @@ import java.io.*;
 import java.net.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 
@@ -85,7 +86,7 @@ public class StationUpdater {
 				byte[] content = resourceOutput.toByteArray();
 				long filesize = content.length;
 
-				run( status.getStation(), "sudo apt -y autoremove" );
+				run( status.getStation(), "sudo apt autoremove -y" );
 				//				// Make sure there is an Updates folder
 				//				run( station.getAddress(), "mkdir -p /home/perform/Updates" );
 				//				scpPut( "station-update", filesize, new ByteArrayInputStream( content ), station.getAddress(), "/home/perform/Updates/station-update" );
@@ -107,7 +108,7 @@ public class StationUpdater {
 		getManager().getProgram().getTaskManager().submit( Task.of( "Perform station " + status.getStation().getAddress() + " update", () -> {
 			Fx.run( () -> status.setUpdateStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
 			try {
-				run( status.getStation(), "sudo apt -y update" );
+				run( status.getStation(), "sudo apt update -y" );
 
 				// Assuming all of that worked, update the step status
 				Fx.run( () -> status.setUpdateStatus( StepStatus.of( StepStatus.State.SUCCESS ) ) );
@@ -125,7 +126,7 @@ public class StationUpdater {
 		getManager().getProgram().getTaskManager().submit( Task.of( "Perform station " + status.getStation().getAddress() + " upgrade", () -> {
 			Fx.run( () -> status.setUpgradeStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
 			try {
-				run( status.getStation(), "sudo apt -y dist-upgrade" );
+				run( status.getStation(), "sudo apt dist-upgrade -y" );
 
 				// Assuming all of that worked, update the step status
 				Fx.run( () -> status.setUpgradeStatus( StepStatus.of( StepStatus.State.SUCCESS ) ) );
@@ -143,7 +144,7 @@ public class StationUpdater {
 		getManager().getProgram().getTaskManager().submit( Task.of( "Perform station " + status.getStation().getAddress() + " restart", () -> {
 			Fx.run( () -> status.setRestartStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
 			try {
-				run( status.getStation(), "sudo reboot; exit;" );
+				run( status.getStation(), "sudo reboot; exit;", Set.of( -1, 0 ) );
 
 				// Wait a few seconds for the station to shut down before continuing
 				// Otherwise, it is immediately reachable, which is not what we want
@@ -190,13 +191,18 @@ public class StationUpdater {
 	}
 
 	private void run( Station station, String command ) throws IOException {
+		run( station, command, Set.of( 0 ) );
+	}
+
+	private void run( Station station, String command, Set<Integer> expectedExitStatuses ) throws IOException {
 		try {
 			// Create the shell session
-			Session session = jsch().getSession(station.getUser(), station.getAddress() );
+			Session session = jsch().getSession( station.getUser(), station.getAddress() );
 			session.connect( CONNECT_TIMEOUT );
 
 			// Create the execution channel
 			ChannelExec channel = (ChannelExec)session.openChannel( "exec" );
+			InputStream input = channel.getInputStream();
 			channel.setCommand( command );
 			//channel.setInputStream( null );
 			//channel.setOutputStream( System.out );
@@ -208,7 +214,6 @@ public class StationUpdater {
 
 			// Read the input buffer
 			byte[] buffer = new byte[ 1024 ];
-			InputStream input = channel.getInputStream();
 			while( !channel.isClosed() ) {
 				while( input.available() > 0 ) {
 					int i = input.read( buffer );
@@ -216,12 +221,15 @@ public class StationUpdater {
 				}
 			}
 			int exitStatus = channel.getExitStatus();
-			if( exitStatus != 0 ) log.atDebug().log( "exit-status: {0} > {1}", exitStatus, command );
 
 			log.atConfig().log( "Disconnecting from {0} ...", station.getAddress() );
 			channel.disconnect();
 			session.disconnect();
 			log.atInfo().log( "Disconnected from {0}", station.getAddress() );
+
+			boolean isExpected = expectedExitStatuses.contains( exitStatus );
+			if( !isExpected ) log.atDebug().log( "exit-status: {0} > {1}", exitStatus, command );
+			if( !isExpected ) throw new IOException( "Unexpected exit status: " + exitStatus + " > " + command );
 		} catch( JSchException exception ) {
 			throw new IOException( exception );
 		}
