@@ -145,10 +145,7 @@ public class StationUpdater {
 			Fx.run( () -> status.setRestartStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
 			try {
 				run( status.getStation(), "sudo reboot; exit;", Set.of( -1, 0 ) );
-
-				// Wait a few seconds for the station to shut down before continuing
-				// Otherwise, it is immediately reachable, which is not what we want
-				ThreadUtil.pause( RESTART_PAUSE / 2 );
+				ThreadUtil.pause( 2000 );
 
 				// Assuming all of that worked, update the step status
 				Fx.run( () -> status.setRestartStatus( StepStatus.of( StepStatus.State.SUCCESS ) ) );
@@ -168,7 +165,7 @@ public class StationUpdater {
 			try {
 				// Wait a few seconds for the station to shut down before continuing
 				// Otherwise, it is immediately reachable, which is not what we want
-				ThreadUtil.pause( RESTART_PAUSE / 2 );
+				ThreadUtil.pause( RESTART_PAUSE );
 
 				long threshold = System.currentTimeMillis() + RESTART_TIMEOUT;
 				boolean isTimeout = System.currentTimeMillis() > threshold;
