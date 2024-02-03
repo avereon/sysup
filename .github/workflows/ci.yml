@@ -2,8 +2,13 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
+    branches:
+      - stable
+  schedule:
+    - cron: '40 12 * * *'
   workflow_dispatch:
 
 env:
@@ -79,11 +84,11 @@ jobs:
 #      - name: CodeQL Analysis
 #        uses: github/codeql-action/analyze@v2
 
-      - name: Package Artifacts
+      - name: Package Arifacts
         run: |
           mvn ${{env.MAVEN_PARMS}} package -Dmaven.test.skip=true
 
-#      - name: Deploy Artifacts
+#      - name: Deploy Arifacts
 #        run: |
 #          mvn ${{env.MAVEN_PARMS}} deploy -Dmaven.test.skip=true
 
