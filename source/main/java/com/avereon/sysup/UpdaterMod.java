@@ -1,7 +1,8 @@
-package com.southbranchcontrols.performstationupdater;
+package com.avereon.sysup;
 
 import com.avereon.xenon.Mod;
 import com.avereon.xenon.ToolRegistration;
+import com.avereon.zenna.icon.AvereonIcon;
 import com.avereon.zenna.icon.PerformIcon;
 import com.avereon.zenna.icon.SouthBranchIcon;
 import lombok.CustomLog;
@@ -24,7 +25,7 @@ public class UpdaterMod extends Mod {
 	@Override
 	public void startup() throws Exception {
 		super.startup();
-		registerIcon( "sbc", new SouthBranchIcon() );
+		registerIcon( "avereon", new AvereonIcon() );
 		registerIcon( "perform", new PerformIcon() );
 		registerIcon( "updater", new PerformIcon() );
 

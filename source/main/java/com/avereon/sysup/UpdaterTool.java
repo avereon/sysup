@@ -1,4 +1,4 @@
-package com.southbranchcontrols.performstationupdater;
+package com.avereon.sysup;
 
 import com.avereon.xenon.ProgramTool;
 import com.avereon.xenon.XenonProgramProduct;

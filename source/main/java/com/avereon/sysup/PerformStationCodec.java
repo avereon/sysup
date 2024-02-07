@@ -1,4 +1,4 @@
-package com.southbranchcontrols.performstationupdater;
+package com.avereon.sysup;
 
 import com.avereon.product.Product;
 import com.avereon.product.Rb;
@@ -18,7 +18,7 @@ import java.util.List;
 
 public class PerformStationCodec extends Codec {
 
-	public static final String MEDIA_TYPE = "application/vnd.southbranchcontrols.perform.stations";
+	public static final String MEDIA_TYPE = "application/vnd.avereon.perform.stations";
 
 	private static final String EXTENSION = "pfmstn";
 
