@@ -8,16 +8,16 @@
 	<parent>
 		<groupId>com.avereon.pom</groupId>
 		<artifactId>mod</artifactId>
-		<version>3.5.3</version>
+		<version>3.5.4</version>
 	</parent>
 
-	<groupId>com.southbranchcontrols.perform</groupId>
-	<artifactId>perform-station-updater</artifactId>
-	<version>1.0.0</version>
+	<groupId>com.avereon.pom</groupId>
+	<artifactId>sysup</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>Perform Station Updater</name>
-	<description>Xenon mod for updating South Branch Control stations</description>
+	<name>System Updater</name>
+	<description>Xenon mod for updating Linux systems</description>
 	<inceptionYear>2023</inceptionYear>
 
 	<developers>
@@ -81,7 +81,7 @@
 				<configuration>
 					<!-- The argLine and systemPropertyVariables should match the failsafe configuration below -->
 					<argLine>
-						--add-opens=com.southbranchcontrols.performstationupdater/com.southbranchcontrols.performstationupdater=ALL-UNNAMED
+						--add-opens=com.avereon.sysup/com.avereon.sysup=ALL-UNNAMED
 					</argLine>
 				</configuration>
 			</plugin>
@@ -108,7 +108,7 @@
 								<configuration>
 									<images>
 										<image>
-											<class>com.southbranchcontrols.performstationupdater.UpdaterIcon</class>
+											<class>com.avereon.sysup.UpdaterIcon</class>
 											<target>${images-folder}/product.png</target>
 											<theme>light</theme>
 										</image>

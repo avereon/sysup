@@ -1,6 +1,6 @@
-import com.southbranchcontrols.performstationupdater.UpdaterMod;
+import com.avereon.sysup.UpdaterMod;
 
-module com.southbranchcontrols.performstationupdater {
+module com.avereon.sysup {
 
 	// Compile-time only
 	requires static lombok;
@@ -12,11 +12,11 @@ module com.southbranchcontrols.performstationupdater {
 	requires java.management;
 	requires com.jcraft.jsch;
 
-	opens com.southbranchcontrols.performstationupdater;
-	opens com.southbranchcontrols.performstationupdater.bundles;
-	opens com.southbranchcontrols.performstationupdater.settings;
+	opens com.avereon.sysup;
+	opens com.avereon.sysup.bundles;
+	opens com.avereon.sysup.settings;
 
-	exports com.southbranchcontrols.performstationupdater to com.avereon.xenon, com.avereon.zarra;
+	exports com.avereon.sysup to com.avereon.xenon, com.avereon.zarra;
 
 	provides com.avereon.xenon.Mod with UpdaterMod;
 
