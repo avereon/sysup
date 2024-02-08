@@ -20,13 +20,16 @@ public class PerformStationCodec extends Codec {
 
 	public static final String MEDIA_TYPE = "application/vnd.avereon.perform.stations";
 
-	private static final String EXTENSION = "pfmstn";
+	private static final String EXTENSION_PFMSTN = "pfmstn";
+
+	private static final String EXTENSION_SYSUP = "sysup";
 
 	private final Product product;
 
 	public PerformStationCodec( Product product ) {
 		this.product = product;
-		setDefaultExtension( EXTENSION );
+		setDefaultExtension( EXTENSION_SYSUP );
+		addSupported( Pattern.EXTENSION, EXTENSION_PFMSTN );
 		addSupported( Pattern.MEDIATYPE, MEDIA_TYPE );
 	}
 
