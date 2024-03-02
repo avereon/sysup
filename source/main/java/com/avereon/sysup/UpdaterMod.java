@@ -1,6 +1,6 @@
 package com.avereon.sysup;
 
-import com.avereon.xenon.Mod;
+import com.avereon.xenon.Module;
 import com.avereon.xenon.ToolRegistration;
 import com.avereon.zenna.icon.AvereonIcon;
 import com.avereon.zenna.icon.PerformIcon;
@@ -9,7 +9,7 @@ import lombok.CustomLog;
 import lombok.Getter;
 
 @CustomLog
-public class UpdaterMod extends Mod {
+public class UpdaterMod extends Module {
 
 	public static final String STYLESHEET = "mod.css";
 

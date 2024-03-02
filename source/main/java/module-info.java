@@ -1,4 +1,5 @@
 import com.avereon.sysup.UpdaterMod;
+import com.avereon.xenon.Module;
 
 module com.avereon.sysup {
 
@@ -18,6 +19,6 @@ module com.avereon.sysup {
 
 	exports com.avereon.sysup to com.avereon.xenon, com.avereon.zarra;
 
-	provides com.avereon.xenon.Mod with UpdaterMod;
+	provides Module with UpdaterMod;
 
 }
