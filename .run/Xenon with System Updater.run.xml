@@ -3,7 +3,7 @@
     <option name="INCLUDE_PROVIDED_SCOPE" value="true" />
     <option name="MAIN_CLASS_NAME" value="com.avereon.xenon.Xenon" />
     <module name="sysup" />
-    <option name="PROGRAM_PARAMETERS" value="--noupdate --profile perform --log-level config --enable-mod com.avereon.sysup" />
+    <option name="PROGRAM_PARAMETERS" value="--noupdate --profile dev --log-level config --enable-mod com.avereon.sysup" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>
