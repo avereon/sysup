@@ -13,6 +13,7 @@ import lombok.Getter;
 
 import java.io.*;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -160,7 +161,7 @@ public class StationUpdater {
 	private void isAlive( StationStatus status ) {
 		if( status.getAliveStatus().state() != StepStatus.State.WAITING ) return;
 
-		getManager().getProgram().getTaskManager().submit( Task.of( "Perform station " + status.getStation().getAddress() + " respond", () -> {
+		getManager().getProgram().getTaskManager().submit( Task.of( "Perform station " + status.getStation().getAddress() + " alive", () -> {
 			Fx.run( () -> status.setAliveStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
 			try {
 				// Wait a few seconds for the station to shut down before continuing
@@ -179,9 +180,33 @@ public class StationUpdater {
 
 				// Assuming all of that worked, update the step status
 				Fx.run( () -> status.setAliveStatus( StepStatus.of( StepStatus.State.SUCCESS ) ) );
-				//checkThatItCameBack( station );
+				verify( status );
 			} catch( IOException | TimeoutException exception ) {
 				Fx.run( () -> status.setAliveStatus( StepStatus.of( StepStatus.State.FAILURE ) ) );
+				throw new RuntimeException( exception );
+			}
+		} ) );
+	}
+
+	private void verify( StationStatus status ) {
+		if( status.getVerifyStatus().state() != StepStatus.State.WAITING ) return;
+
+		getManager().getProgram().getTaskManager().submit( Task.of( "Perform station " + status.getStation().getAddress() + " verify", () -> {
+			Fx.run( () -> status.setVerifyStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
+			try {
+				ByteArrayOutputStream output = new ByteArrayOutputStream();
+				run( status.getStation(), "apt list --upgradable | grep -v ^List | wc -l", Set.of( 0 ), null, output, null );
+
+				// Check the result from the output
+				String resultData = output.toString( StandardCharsets.UTF_8 ).trim();
+				int upgradableCount = Integer.parseInt( resultData );
+				if( upgradableCount > 0 ) throw new IOException( "Station still has " + upgradableCount + " upgradable packages" );
+
+				// Assuming all of that worked, update the step status
+				Fx.run( () -> status.setVerifyStatus( StepStatus.of( StepStatus.State.SUCCESS ) ) );
+				log.atInfo().log( "Station {0} is up to date", status.getStation().getAddress() );
+			} catch( IOException exception ) {
+				Fx.run( () -> status.setVerifyStatus( StepStatus.of( StepStatus.State.FAILURE ) ) );
 				throw new RuntimeException( exception );
 			}
 		} ) );
@@ -192,6 +217,10 @@ public class StationUpdater {
 	}
 
 	private void run( Station station, String command, Set<Integer> expectedExitStatuses ) throws IOException {
+		run( station, command, expectedExitStatuses, null, null, null );
+	}
+
+	private void run( Station station, String command, Set<Integer> expectedExitStatuses, InputStream in, OutputStream out, OutputStream err ) throws IOException {
 		try {
 			// Create the shell session
 			Session session = jsch().getSession( station.getUser(), station.getAddress() );
@@ -201,13 +230,13 @@ public class StationUpdater {
 			ChannelExec channel = (ChannelExec)session.openChannel( "exec" );
 			InputStream input = channel.getInputStream();
 			channel.setCommand( command );
-			//channel.setInputStream( null );
-			//channel.setOutputStream( System.out );
-			//channel.setErrStream( System.err );
+			channel.setInputStream( in );
+			channel.setOutputStream( out, true );
+			channel.setErrStream( err, true );
 
-			log.atConfig().log( "Connecting to {0} ...", station.getAddress() );
+			log.atDebug().log( "Connecting to {0} ...", station.getAddress() );
 			channel.connect( CHANNEL_TIMEOUT );
-			log.atInfo().log( "Connected to {0}", station.getAddress() );
+			log.atDebug().log( "Connected to {0}", station.getAddress() );
 
 			// Read the input buffer
 			byte[] buffer = new byte[ 1024 ];
@@ -219,10 +248,10 @@ public class StationUpdater {
 			}
 			int exitStatus = channel.getExitStatus();
 
-			log.atConfig().log( "Disconnecting from {0} ...", station.getAddress() );
+			log.atDebug().log( "Disconnecting from {0} ...", station.getAddress() );
 			channel.disconnect();
 			session.disconnect();
-			log.atInfo().log( "Disconnected from {0}", station.getAddress() );
+			log.atDebug().log( "Disconnected from {0}", station.getAddress() );
 
 			boolean isExpected = expectedExitStatuses.contains( exitStatus );
 			if( !isExpected ) log.atDebug().log( "exit-status: {0} > {1}", exitStatus, command );
@@ -257,9 +286,9 @@ public class StationUpdater {
 			OutputStream out = channel.getOutputStream();
 			InputStream in = channel.getInputStream();
 
-			log.atConfig().log( "Connecting to {0} ...", station.getAddress() );
+			log.atDebug().log( "Connecting to {0} ...", station.getAddress() );
 			channel.connect();
-			log.atInfo().log( "Connected to {0}", station.getAddress() );
+			log.atDebug().log( "Connected to {0}", station.getAddress() );
 
 			// Check that the remote scp is ready
 			targetScpCheck( in );
@@ -283,11 +312,13 @@ public class StationUpdater {
 			out.close();
 			targetScpCheck( in );
 
-			log.atDebug().log( "exit-status: {0}", channel.getExitStatus() );
-			log.atConfig().log( "Disconnecting from {0} ...", station.getAddress() );
+			int exitStatus = channel.getExitStatus();
+
+			log.at( exitStatus <= 0 ? Level.FINE : Level.WARNING ).log( "exit-status: {0}", exitStatus );
+			log.atDebug().log( "Disconnecting from {0} ...", station.getAddress() );
 			channel.disconnect();
 			session.disconnect();
-			log.atInfo().log( "Disconnected from {0}", station.getAddress() );
+			log.atDebug().log( "Disconnected from {0}", station.getAddress() );
 		} catch( JSchException exception ) {
 			throw new IOException( exception );
 		}
@@ -357,10 +388,10 @@ public class StationUpdater {
 		static Map<Integer, java.util.logging.Level> name = new HashMap<>();
 
 		static {
-			name.put( DEBUG, Level.FINE );
-			name.put( INFO, Level.CONFIG );
-			name.put( WARN, Level.WARNING );
-			name.put( ERROR, Level.SEVERE );
+			name.put( DEBUG, Level.FINEST );
+			name.put( INFO, Level.FINER );
+			name.put( WARN, Level.FINE );
+			name.put( ERROR, Level.WARNING );
 			name.put( FATAL, Level.SEVERE );
 		}
 

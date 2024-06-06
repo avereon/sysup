@@ -25,6 +25,8 @@ public class StationStatus {
 
 	private final SimpleObjectProperty<StepStatus> aliveStatusProperty;
 
+	private final SimpleObjectProperty<StepStatus> verifyStatusProperty;
+
 	public StationStatus( Station station ) {
 		this.station = station;
 		this.setupStatusProperty = new SimpleObjectProperty<>( new StepStatus( StepStatus.State.WAITING, new Date() ) );
@@ -32,6 +34,7 @@ public class StationStatus {
 		this.upgradeStatusProperty = new SimpleObjectProperty<>( new StepStatus( StepStatus.State.WAITING, new Date() ) );
 		this.restartStatusProperty = new SimpleObjectProperty<>( new StepStatus( StepStatus.State.WAITING, new Date() ) );
 		this.aliveStatusProperty = new SimpleObjectProperty<>( new StepStatus( StepStatus.State.WAITING, new Date() ) );
+		this.verifyStatusProperty = new SimpleObjectProperty<>( new StepStatus( StepStatus.State.WAITING, new Date() ) );
 	}
 
 	public List<StepStatus> getSteps() {
@@ -42,6 +45,7 @@ public class StationStatus {
 		steps.add( upgradeStatusProperty.get() );
 		steps.add( restartStatusProperty.get() );
 		steps.add( aliveStatusProperty.get() );
+		steps.add( verifyStatusProperty.get() );
 
 		return steps;
 	}
@@ -52,6 +56,7 @@ public class StationStatus {
 		upgradeStatusProperty.set(new StepStatus( StepStatus.State.WAITING, new Date()));
 		restartStatusProperty.set(new StepStatus( StepStatus.State.WAITING, new Date()));
 		aliveStatusProperty.set(new StepStatus( StepStatus.State.WAITING, new Date()));
+		verifyStatusProperty.set(new StepStatus( StepStatus.State.WAITING, new Date()));
 	}
 
 	public ReadOnlyObjectProperty<StepStatus> setupStatusProperty() {
@@ -112,6 +117,18 @@ public class StationStatus {
 
 	public void setAliveStatus( StepStatus status) {
 		aliveStatusProperty.set( status );
+	}
+
+	public ReadOnlyObjectProperty<StepStatus> verifyStatusProperty() {
+		return verifyStatusProperty;
+	}
+
+	public StepStatus getVerifyStatus() {
+		return verifyStatusProperty.get();
+	}
+
+	public void setVerifyStatus( StepStatus status) {
+		verifyStatusProperty.set( status );
 	}
 
 }

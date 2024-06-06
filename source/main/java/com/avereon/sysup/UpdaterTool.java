@@ -70,8 +70,11 @@ public class UpdaterTool extends ProgramTool {
 		TableColumn<StationStatus, StepStatus> alive = new TableColumn<>( "Restarted" );
 		alive.setCellValueFactory( new PropertyValueFactory<>( "aliveStatus" ) );
 		alive.setCellFactory( new StepStatusCellFactory() );
+		TableColumn<StationStatus, StepStatus> verify = new TableColumn<>( "Verified" );
+		verify.setCellValueFactory( new PropertyValueFactory<>( "verifyStatus" ) );
+		verify.setCellFactory( new StepStatusCellFactory() );
 
-		table.getColumns().addAll( List.of( action, name, setup, update, upgrade, restart, alive ) );
+		table.getColumns().addAll( List.of( action, name, setup, update, upgrade, restart, alive, verify ) );
 	}
 
 	class StationButtonCellFactory implements Callback<TableColumn<StationStatus, String>, TableCell<StationStatus, String>> {
