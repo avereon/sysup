@@ -58,10 +58,10 @@ public class UpdaterTool extends ProgramTool {
 		TableColumn<StationStatus, StepStatus> setup = new TableColumn<>( "Setup" );
 		setup.setCellValueFactory( new PropertyValueFactory<>( "setupStatus" ) );
 		setup.setCellFactory( new StepStatusCellFactory() );
-		TableColumn<StationStatus, StepStatus> update = new TableColumn<>( "Update" );
+		TableColumn<StationStatus, StepStatus> update = new TableColumn<>( "Refresh" );
 		update.setCellValueFactory( new PropertyValueFactory<>( "updateStatus" ) );
 		update.setCellFactory( new StepStatusCellFactory() );
-		TableColumn<StationStatus, StepStatus> upgrade = new TableColumn<>( "Upgrade" );
+		TableColumn<StationStatus, StepStatus> upgrade = new TableColumn<>( "Update" );
 		upgrade.setCellValueFactory( new PropertyValueFactory<>( "upgradeStatus" ) );
 		upgrade.setCellFactory( new StepStatusCellFactory() );
 		TableColumn<StationStatus, StepStatus> restart = new TableColumn<>( "Restart" );
