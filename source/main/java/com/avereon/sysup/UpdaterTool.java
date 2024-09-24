@@ -54,7 +54,9 @@ public class UpdaterTool extends ProgramTool {
 		//action.setCellValueFactory( new PropertyValueFactory<>( "action" ) );
 		action.setCellFactory( new StationButtonCellFactory() );
 		TableColumn<StationStatus, String> name = new TableColumn<>( "Name" );
-		name.setCellValueFactory( new PropertyValueFactory<>( "station" ) );
+		name.setCellValueFactory( new PropertyValueFactory<>( "name" ) );
+		TableColumn<StationStatus, String> address = new TableColumn<>( "Address" );
+		address.setCellValueFactory( new PropertyValueFactory<>( "address" ) );
 		TableColumn<StationStatus, StepStatus> setup = new TableColumn<>( "Setup" );
 		setup.setCellValueFactory( new PropertyValueFactory<>( "setupStatus" ) );
 		setup.setCellFactory( new StepStatusCellFactory() );
@@ -74,7 +76,7 @@ public class UpdaterTool extends ProgramTool {
 		verify.setCellValueFactory( new PropertyValueFactory<>( "verifyStatus" ) );
 		verify.setCellFactory( new StepStatusCellFactory() );
 
-		table.getColumns().addAll( List.of( action, name, setup, update, upgrade, restart, alive, verify ) );
+		table.getColumns().addAll( List.of( action, name, address, setup, update, upgrade, restart, alive, verify ) );
 	}
 
 	class StationButtonCellFactory implements Callback<TableColumn<StationStatus, String>, TableCell<StationStatus, String>> {

@@ -15,6 +15,12 @@ public class StationStatus {
 	@Getter
 	private final Station station;
 
+	@Getter
+	private final String name;
+
+	@Getter
+	private final String address;
+
 	private final SimpleObjectProperty<StepStatus> setupStatusProperty;
 
 	private final SimpleObjectProperty<StepStatus> updateStatusProperty;
@@ -29,6 +35,8 @@ public class StationStatus {
 
 	public StationStatus( Station station ) {
 		this.station = station;
+		this.name = station.getName();
+		this.address = station.getAddress();
 		this.setupStatusProperty = new SimpleObjectProperty<>( new StepStatus( StepStatus.State.WAITING, new Date() ) );
 		this.updateStatusProperty = new SimpleObjectProperty<>( new StepStatus( StepStatus.State.WAITING, new Date() ) );
 		this.upgradeStatusProperty = new SimpleObjectProperty<>( new StepStatus( StepStatus.State.WAITING, new Date() ) );
