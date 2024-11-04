@@ -3,9 +3,9 @@ package com.avereon.sysup;
 import com.avereon.xenon.Xenon;
 import com.avereon.xenon.asset.Asset;
 import com.avereon.xenon.asset.exception.AssetException;
-import com.avereon.xenon.scheme.BaseScheme;
+import com.avereon.xenon.scheme.ProductScheme;
 
-public class PerformScheme extends BaseScheme {
+public class PerformScheme extends ProductScheme {
 
 	public static final String ID = "perform";
 
