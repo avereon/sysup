@@ -12,6 +12,7 @@ module com.avereon.sysup {
 	requires java.logging;
 	requires java.management;
 	requires com.jcraft.jsch;
+	requires org.apache.commons.lang3;
 
 	opens com.avereon.sysup;
 	opens com.avereon.sysup.bundles;
