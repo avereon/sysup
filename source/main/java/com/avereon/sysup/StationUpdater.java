@@ -212,7 +212,7 @@ public class StationUpdater {
 				Fx.run( () -> status.setVerifyStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
 				try {
 					ByteArrayOutputStream output = new ByteArrayOutputStream();
-					run( status.getStation(), "apt list --upgradable | grep -v ^List | wc -l", Set.of( 0 ), null, output, null );
+					run( status.getStation(), "apt list -a --upgradable | grep -v ^List | grep -v -e '^$' | wc -l", Set.of( 0 ), null, output, null );
 
 					// Check the result from the output
 					String resultData = output.toString( StandardCharsets.UTF_8 ).trim();
