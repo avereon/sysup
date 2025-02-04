@@ -2,6 +2,7 @@ package com.avereon.sysup;
 
 import com.avereon.util.IoUtil;
 import com.avereon.util.ThreadUtil;
+import com.avereon.xenon.notice.Notice;
 import com.avereon.xenon.task.Task;
 import com.avereon.zarra.javafx.Fx;
 import com.jcraft.jsch.ChannelExec;
@@ -76,140 +77,158 @@ public class StationUpdater {
 	private void setup( StationStatus status ) {
 		if( status.getSetupStatus().state() != StepStatus.State.WAITING ) return;
 
-		getManager().getProgram().getTaskManager().submit( Task.of( "Perform station " + status.getStation().getAddress() + " setup", () -> {
-			Fx.run( () -> status.setSetupStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
-			try {
-				InputStream resourceInput = getClass().getResourceAsStream( "station-update" );
-				ByteArrayOutputStream resourceOutput = new ByteArrayOutputStream();
-				IoUtil.copy( resourceInput, resourceOutput );
-				if( resourceInput != null ) resourceInput.close();
+		getManager().getProgram().getTaskManager().submit( Task.of(
+			"Perform station " + status.getStation().getAddress() + " setup", () -> {
+				Fx.run( () -> status.setSetupStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
+				try {
+					InputStream resourceInput = getClass().getResourceAsStream( "station-update" );
+					ByteArrayOutputStream resourceOutput = new ByteArrayOutputStream();
+					IoUtil.copy( resourceInput, resourceOutput );
+					if( resourceInput != null ) resourceInput.close();
 
-				byte[] content = resourceOutput.toByteArray();
-				long filesize = content.length;
+					byte[] content = resourceOutput.toByteArray();
+					long filesize = content.length;
 
-				run( status.getStation(), "sudo apt autoremove -y" );
-				//				// Make sure there is an Updates folder
-				//				run( station.getAddress(), "mkdir -p /home/perform/Updates" );
-				//				scpPut( "station-update", filesize, new ByteArrayInputStream( content ), station.getAddress(), "/home/perform/Updates/station-update" );
-				//				run( station.getAddress(), "chmod a+x /home/perform/Updates/station-update" );
+					run( status.getStation(), "sudo apt autoremove -y" );
+					//				// Make sure there is an Updates folder
+					//				run( station.getAddress(), "mkdir -p /home/perform/Updates" );
+					//				scpPut( "station-update", filesize, new ByteArrayInputStream( content ), station.getAddress(), "/home/perform/Updates/station-update" );
+					//				run( station.getAddress(), "chmod a+x /home/perform/Updates/station-update" );
 
-				// Assuming all of that worked, update the step status
-				Fx.run( () -> status.setSetupStatus( StepStatus.of( StepStatus.State.SUCCESS ) ) );
-				update( status );
-			} catch( IOException exception ) {
-				Fx.run( () -> status.setSetupStatus( StepStatus.of( StepStatus.State.FAILURE ) ) );
-				throw new RuntimeException( exception );
+					// Assuming all of that worked, update the step status
+					Fx.run( () -> status.setSetupStatus( StepStatus.of( StepStatus.State.SUCCESS ) ) );
+					update( status );
+				} catch( IOException exception ) {
+					Fx.run( () -> status.setSetupStatus( StepStatus.of( StepStatus.State.FAILURE ) ) );
+					stationUpdateFailure( exception );
+					throw new RuntimeException( exception );
+				}
 			}
-		} ) );
+		) );
 	}
 
 	private void update( StationStatus status ) {
 		if( status.getUpdateStatus().state() != StepStatus.State.WAITING ) return;
 
-		getManager().getProgram().getTaskManager().submit( Task.of( "Perform station " + status.getStation().getAddress() + " update", () -> {
-			Fx.run( () -> status.setUpdateStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
-			try {
-				run( status.getStation(), "sudo apt update -y" );
+		getManager().getProgram().getTaskManager().submit( Task.of(
+			"Perform station " + status.getStation().getAddress() + " update", () -> {
+				Fx.run( () -> status.setUpdateStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
+				try {
+					run( status.getStation(), "sudo apt update -y" );
 
-				// Assuming all of that worked, update the step status
-				Fx.run( () -> status.setUpdateStatus( StepStatus.of( StepStatus.State.SUCCESS ) ) );
-				upgrade( status );
-			} catch( IOException exception ) {
-				Fx.run( () -> status.setUpdateStatus( StepStatus.of( StepStatus.State.FAILURE ) ) );
-				throw new RuntimeException( exception );
+					// Assuming all of that worked, update the step status
+					Fx.run( () -> status.setUpdateStatus( StepStatus.of( StepStatus.State.SUCCESS ) ) );
+					upgrade( status );
+				} catch( IOException exception ) {
+					Fx.run( () -> status.setUpdateStatus( StepStatus.of( StepStatus.State.FAILURE ) ) );
+					stationUpdateFailure( exception );
+					throw new RuntimeException( exception );
+				}
 			}
-		} ) );
+		) );
 	}
 
 	private void upgrade( StationStatus status ) {
 		if( status.getUpgradeStatus().state() != StepStatus.State.WAITING ) return;
 
-		getManager().getProgram().getTaskManager().submit( Task.of( "Perform station " + status.getStation().getAddress() + " upgrade", () -> {
-			Fx.run( () -> status.setUpgradeStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
-			try {
-				run( status.getStation(), "sudo apt dist-upgrade -y" );
+		getManager().getProgram().getTaskManager().submit( Task.of(
+			"Perform station " + status.getStation().getAddress() + " upgrade", () -> {
+				Fx.run( () -> status.setUpgradeStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
+				try {
+					run( status.getStation(), "sudo apt dist-upgrade -y" );
 
-				// Assuming all of that worked, update the step status
-				Fx.run( () -> status.setUpgradeStatus( StepStatus.of( StepStatus.State.SUCCESS ) ) );
-				restart( status );
-			} catch( IOException exception ) {
-				Fx.run( () -> status.setUpgradeStatus( StepStatus.of( StepStatus.State.FAILURE ) ) );
-				throw new RuntimeException( exception );
+					// Assuming all of that worked, update the step status
+					Fx.run( () -> status.setUpgradeStatus( StepStatus.of( StepStatus.State.SUCCESS ) ) );
+					restart( status );
+				} catch( IOException exception ) {
+					Fx.run( () -> status.setUpgradeStatus( StepStatus.of( StepStatus.State.FAILURE ) ) );
+					stationUpdateFailure( exception );
+					throw new RuntimeException( exception );
+				}
 			}
-		} ) );
+		) );
 	}
 
 	private void restart( StationStatus status ) {
 		if( status.getRestartStatus().state() != StepStatus.State.WAITING ) return;
 
-		getManager().getProgram().getTaskManager().submit( Task.of( "Perform station " + status.getStation().getAddress() + " restart", () -> {
-			Fx.run( () -> status.setRestartStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
-			try {
-				run( status.getStation(), "sudo reboot; exit;", Set.of( -1, 0 ) );
-				ThreadUtil.pause( 2000 );
+		getManager().getProgram().getTaskManager().submit( Task.of(
+			"Perform station " + status.getStation().getAddress() + " restart", () -> {
+				Fx.run( () -> status.setRestartStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
+				try {
+					run( status.getStation(), "sudo reboot; exit;", Set.of( -1, 0 ) );
+					ThreadUtil.pause( 2000 );
 
-				// Assuming all of that worked, update the step status
-				Fx.run( () -> status.setRestartStatus( StepStatus.of( StepStatus.State.SUCCESS ) ) );
-				isAlive( status );
-			} catch( IOException exception ) {
-				Fx.run( () -> status.setRestartStatus( StepStatus.of( StepStatus.State.FAILURE ) ) );
-				throw new RuntimeException( exception );
+					// Assuming all of that worked, update the step status
+					Fx.run( () -> status.setRestartStatus( StepStatus.of( StepStatus.State.SUCCESS ) ) );
+					isAlive( status );
+				} catch( IOException exception ) {
+					Fx.run( () -> status.setRestartStatus( StepStatus.of( StepStatus.State.FAILURE ) ) );
+					stationUpdateFailure( exception );
+					throw new RuntimeException( exception );
+				}
 			}
-		} ) );
+		) );
 	}
 
 	private void isAlive( StationStatus status ) {
 		if( status.getAliveStatus().state() != StepStatus.State.WAITING ) return;
 
-		getManager().getProgram().getTaskManager().submit( Task.of( "Perform station " + status.getStation().getAddress() + " alive", () -> {
-			Fx.run( () -> status.setAliveStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
-			try {
-				// Wait a few seconds for the station to shut down before continuing
-				// Otherwise, it is immediately reachable, which is not what we want
-				ThreadUtil.pause( RESTART_PAUSE );
+		getManager().getProgram().getTaskManager().submit( Task.of(
+			"Perform station " + status.getStation().getAddress() + " alive", () -> {
+				Fx.run( () -> status.setAliveStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
+				try {
+					// Wait a few seconds for the station to shut down before continuing
+					// Otherwise, it is immediately reachable, which is not what we want
+					ThreadUtil.pause( RESTART_PAUSE );
 
-				long threshold = System.currentTimeMillis() + RESTART_TIMEOUT;
-				boolean isTimeout = System.currentTimeMillis() > threshold;
-				while( !isTimeout ) {
-					if( isReachable( status.getStation().getAddress(), 22 ) ) break;
-					ThreadUtil.pause( 1000 );
-					isTimeout = System.currentTimeMillis() > threshold;
+					long threshold = System.currentTimeMillis() + RESTART_TIMEOUT;
+					boolean isTimeout = System.currentTimeMillis() > threshold;
+					while( !isTimeout ) {
+						if( isReachable( status.getStation().getAddress(), 22 ) ) break;
+						ThreadUtil.pause( 1000 );
+						isTimeout = System.currentTimeMillis() > threshold;
+					}
+
+					if( isTimeout ) throw new TimeoutException();
+
+					// Assuming all of that worked, update the step status
+					Fx.run( () -> status.setAliveStatus( StepStatus.of( StepStatus.State.SUCCESS ) ) );
+					verify( status );
+				} catch( IOException | TimeoutException exception ) {
+					Fx.run( () -> status.setAliveStatus( StepStatus.of( StepStatus.State.FAILURE ) ) );
+					stationUpdateFailure( exception );
+					throw new RuntimeException( exception );
 				}
-
-				if( isTimeout ) throw new TimeoutException();
-
-				// Assuming all of that worked, update the step status
-				Fx.run( () -> status.setAliveStatus( StepStatus.of( StepStatus.State.SUCCESS ) ) );
-				verify( status );
-			} catch( IOException | TimeoutException exception ) {
-				Fx.run( () -> status.setAliveStatus( StepStatus.of( StepStatus.State.FAILURE ) ) );
-				throw new RuntimeException( exception );
 			}
-		} ) );
+		) );
 	}
 
 	private void verify( StationStatus status ) {
 		if( status.getVerifyStatus().state() != StepStatus.State.WAITING ) return;
 
-		getManager().getProgram().getTaskManager().submit( Task.of( "Perform station " + status.getStation().getAddress() + " verify", () -> {
-			Fx.run( () -> status.setVerifyStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
-			try {
-				ByteArrayOutputStream output = new ByteArrayOutputStream();
-				run( status.getStation(), "apt list --upgradable | grep -v ^List | wc -l", Set.of( 0 ), null, output, null );
+		getManager().getProgram().getTaskManager().submit( Task.of(
+			"Perform station " + status.getStation().getAddress() + " verify", () -> {
+				Fx.run( () -> status.setVerifyStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
+				try {
+					ByteArrayOutputStream output = new ByteArrayOutputStream();
+					run( status.getStation(), "apt list --upgradable | grep -v ^List | wc -l", Set.of( 0 ), null, output, null );
 
-				// Check the result from the output
-				String resultData = output.toString( StandardCharsets.UTF_8 ).trim();
-				int upgradableCount = Integer.parseInt( resultData );
-				if( upgradableCount > 0 ) throw new IOException( "Station still has " + upgradableCount + " upgradable packages" );
+					// Check the result from the output
+					String resultData = output.toString( StandardCharsets.UTF_8 ).trim();
+					int upgradableCount = Integer.parseInt( resultData );
+					if( upgradableCount > 0 ) throw new IOException( "Station still has " + upgradableCount + " upgradable packages" );
 
-				// Assuming all of that worked, update the step status
-				Fx.run( () -> status.setVerifyStatus( StepStatus.of( StepStatus.State.SUCCESS ) ) );
-				log.atInfo().log( "Station {0} is up to date", status.getStation().getAddress() );
-			} catch( IOException exception ) {
-				Fx.run( () -> status.setVerifyStatus( StepStatus.of( StepStatus.State.FAILURE ) ) );
-				throw new RuntimeException( exception );
+					// Assuming all of that worked, update the step status
+					Fx.run( () -> status.setVerifyStatus( StepStatus.of( StepStatus.State.SUCCESS ) ) );
+					log.atInfo().log( "Station {0} is up to date", status.getStation().getAddress() );
+				} catch( IOException exception ) {
+					Fx.run( () -> status.setVerifyStatus( StepStatus.of( StepStatus.State.FAILURE ) ) );
+					stationUpdateFailure( exception );
+					throw new RuntimeException( exception );
+				}
 			}
-		} ) );
+		) );
 	}
 
 	private void run( Station station, String command ) throws IOException {
@@ -381,6 +400,10 @@ public class StationUpdater {
 			log.atWarn().log( "%s %s", this, exception.getMessage().toLowerCase() );
 		}
 		return false;
+	}
+
+	private void stationUpdateFailure( Exception exception ) {
+		getManager().getProgram().getNoticeManager().addNotice( new Notice( "Station Update Failure", exception.getMessage() ).setType( Notice.Type.WARN ) );
 	}
 
 	private static class JschLogger implements com.jcraft.jsch.Logger {
