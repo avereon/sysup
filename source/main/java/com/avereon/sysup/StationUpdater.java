@@ -24,13 +24,13 @@ import java.util.logging.Level;
 @CustomLog
 public class StationUpdater {
 
-	private static final int CONNECT_TIMEOUT = 5000;
+	private static final int CONNECT_TIMEOUT = 10000;
 
 	private static final int CHANNEL_TIMEOUT = 3600000;
 
-	private static final int RESTART_PAUSE = 8000;
+	private static final int RESTART_PAUSE = 12000;
 
-	private static final int RESTART_TIMEOUT = 120000;
+	private static final int RESTART_TIMEOUT = 180000;
 
 	//private final JSch jsch;
 
