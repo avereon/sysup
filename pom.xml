@@ -8,12 +8,12 @@
 	<parent>
 		<groupId>com.avereon.pom</groupId>
 		<artifactId>mod</artifactId>
-		<version>3.5.8</version>
+		<version>3.6.0</version>
 	</parent>
 
 	<groupId>com.avereon</groupId>
 	<artifactId>sysup</artifactId>
-	<version>1.0</version>
+	<version>1.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>System Updater</name>
@@ -45,7 +45,7 @@
 	</pluginRepositories>
 
 	<properties>
-		<cameo.version>2.10</cameo.version>
+		<cameo.version>2.11</cameo.version>
 		<images-folder>target/main/images</images-folder>
 	</properties>
 
