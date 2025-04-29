@@ -13,7 +13,7 @@
 
 	<groupId>com.avereon</groupId>
 	<artifactId>sysup</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>1.0</version>
 	<packaging>jar</packaging>
 
 	<name>System Updater</name>
