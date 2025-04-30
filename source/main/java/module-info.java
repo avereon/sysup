@@ -18,7 +18,7 @@ module com.avereon.sysup {
 	opens com.avereon.sysup.bundles;
 	opens com.avereon.sysup.settings;
 
-	exports com.avereon.sysup to com.avereon.xenon, com.avereon.zarra;
+	exports com.avereon.sysup to com.avereon.xenon, com.avereon.zerra;
 
 	provides Module with UpdaterMod;
 
