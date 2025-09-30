@@ -109,6 +109,7 @@ public class StationUpdater {
 					//				run( station.getAddress(), "chmod a+x /home/perform/Updates/station-update" );
 
 					// Update the VPN client config
+					// TODO This should be moved to a module setting
 					Path vpnClientFolder = Paths.get( System.getProperty( "user.home" ) + "/Data/sod/vpn/client" );
 					String vpnClientConfig = status.getStation().getAddress().replace( ".", "-" ) + ".conf";
 					Path vpnClientPath = vpnClientFolder.resolve( vpnClientConfig );
