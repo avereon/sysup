@@ -1,6 +1,5 @@
 package com.avereon.sysup;
 
-import com.avereon.util.IoUtil;
 import com.avereon.util.ThreadUtil;
 import com.avereon.xenon.notice.Notice;
 import com.avereon.xenon.task.Task;
@@ -15,6 +14,9 @@ import lombok.Getter;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -53,6 +55,14 @@ public class StationUpdater {
 	public void run() {
 		if( isRunning() ) return;
 		station.reset();
+
+		// setup
+		// update
+		// upgrade
+		// restart
+		// isAlive
+		// verify
+
 		setup( station );
 	}
 
@@ -76,24 +86,36 @@ public class StationUpdater {
 
 	private void setup( StationStatus status ) {
 		if( status.getSetupStatus().state() != StepStatus.State.WAITING ) return;
+		getManager().getProgram().getTaskManager().submit( setupTask( status ) );
+	}
 
-		getManager().getProgram().getTaskManager().submit( Task.of(
+	private Task<?> setupTask( StationStatus status ) {
+		return Task.of(
 			"Perform station " + status.getStation().getAddress() + " setup", () -> {
 				Fx.run( () -> status.setSetupStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
 				try {
-					InputStream resourceInput = getClass().getResourceAsStream( "station-update" );
-					ByteArrayOutputStream resourceOutput = new ByteArrayOutputStream();
-					IoUtil.copy( resourceInput, resourceOutput );
-					if( resourceInput != null ) resourceInput.close();
+					run( status.getStation(), "sudo apt autoremove -y; mkdir -p Downloads;" );
 
-					byte[] content = resourceOutput.toByteArray();
-					long filesize = content.length;
-
-					run( status.getStation(), "sudo apt autoremove -y" );
-					//				// Make sure there is an Updates folder
-					//				run( station.getAddress(), "mkdir -p /home/perform/Updates" );
+					//					InputStream resourceInput = getClass().getResourceAsStream( "station-update" );
+					//					ByteArrayOutputStream resourceOutput = new ByteArrayOutputStream();
+					//					if( resourceInput != null ) {
+					//						IoUtil.copy( resourceInput, resourceOutput );
+					//						resourceInput.close();
+					//					}
+					//
+					//					byte[] content = resourceOutput.toByteArray();
+					//					long filesize = content.length;
 					//				scpPut( "station-update", filesize, new ByteArrayInputStream( content ), station.getAddress(), "/home/perform/Updates/station-update" );
 					//				run( station.getAddress(), "chmod a+x /home/perform/Updates/station-update" );
+
+					// Update the VPN client config
+					Path vpnClientFolder = Paths.get( System.getProperty( "user.home" ) + "/Data/sod/vpn/client" );
+					String vpnClientConfig = status.getStation().getAddress().replace( ".", "-" ) + ".conf";
+					Path vpnClientPath = vpnClientFolder.resolve( vpnClientConfig );
+					if( Files.exists( vpnClientPath ) ) {
+						scpPut( status.getStation(), vpnClientPath, "Downloads/" + vpnClientConfig );
+					}
+					run( status.getStation(), "sudo cp Downloads/" + vpnClientConfig + " /etc/openvpn/" + vpnClientConfig + ";" );
 
 					// Assuming all of that worked, update the step status
 					Fx.run( () -> status.setSetupStatus( StepStatus.of( StepStatus.State.SUCCESS ) ) );
@@ -104,13 +126,16 @@ public class StationUpdater {
 					throw new RuntimeException( exception );
 				}
 			}
-		) );
+		);
 	}
 
 	private void update( StationStatus status ) {
 		if( status.getUpdateStatus().state() != StepStatus.State.WAITING ) return;
+		getManager().getProgram().getTaskManager().submit( updateTask( status ) );
+	}
 
-		getManager().getProgram().getTaskManager().submit( Task.of(
+	private Task<?> updateTask( StationStatus status ) {
+		return Task.of(
 			"Perform station " + status.getStation().getAddress() + " update", () -> {
 				Fx.run( () -> status.setUpdateStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
 				try {
@@ -125,13 +150,16 @@ public class StationUpdater {
 					throw new RuntimeException( exception );
 				}
 			}
-		) );
+		);
 	}
 
 	private void upgrade( StationStatus status ) {
 		if( status.getUpgradeStatus().state() != StepStatus.State.WAITING ) return;
+		getManager().getProgram().getTaskManager().submit( upgradeTask( status ) );
+	}
 
-		getManager().getProgram().getTaskManager().submit( Task.of(
+	private Task<?> upgradeTask( StationStatus status ) {
+		return Task.of(
 			"Perform station " + status.getStation().getAddress() + " upgrade", () -> {
 				Fx.run( () -> status.setUpgradeStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
 				try {
@@ -146,13 +174,16 @@ public class StationUpdater {
 					throw new RuntimeException( exception );
 				}
 			}
-		) );
+		);
 	}
 
 	private void restart( StationStatus status ) {
 		if( status.getRestartStatus().state() != StepStatus.State.WAITING ) return;
+		getManager().getProgram().getTaskManager().submit( restartTask( status ) );
+	}
 
-		getManager().getProgram().getTaskManager().submit( Task.of(
+	private Task<?> restartTask( StationStatus status ) {
+		return Task.of(
 			"Perform station " + status.getStation().getAddress() + " restart", () -> {
 				Fx.run( () -> status.setRestartStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
 				try {
@@ -168,13 +199,16 @@ public class StationUpdater {
 					throw new RuntimeException( exception );
 				}
 			}
-		) );
+		);
 	}
 
 	private void isAlive( StationStatus status ) {
 		if( status.getAliveStatus().state() != StepStatus.State.WAITING ) return;
+		getManager().getProgram().getTaskManager().submit( isAliveTask( status ) );
+	}
 
-		getManager().getProgram().getTaskManager().submit( Task.of(
+	private Task<?> isAliveTask( StationStatus status ) {
+		return Task.of(
 			"Perform station " + status.getStation().getAddress() + " alive", () -> {
 				Fx.run( () -> status.setAliveStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
 				try {
@@ -201,13 +235,16 @@ public class StationUpdater {
 					throw new RuntimeException( exception );
 				}
 			}
-		) );
+		);
 	}
 
 	private void verify( StationStatus status ) {
 		if( status.getVerifyStatus().state() != StepStatus.State.WAITING ) return;
+		getManager().getProgram().getTaskManager().submit( verifyTask( status ) );
+	}
 
-		getManager().getProgram().getTaskManager().submit( Task.of(
+	private Task<?> verifyTask( StationStatus status ) {
+		return Task.of(
 			"Perform station " + status.getStation().getAddress() + " verify", () -> {
 				Fx.run( () -> status.setVerifyStatus( StepStatus.of( StepStatus.State.RUNNING ) ) );
 				try {
@@ -228,7 +265,7 @@ public class StationUpdater {
 					throw new RuntimeException( exception );
 				}
 			}
-		) );
+		);
 	}
 
 	private void run( Station station, String command ) throws IOException {
@@ -280,8 +317,15 @@ public class StationUpdater {
 		}
 	}
 
-	private void scpPut( String sourcePath, Station station, String targetPath ) throws IOException {
-		File sourceFile = new File( sourcePath );
+	private void scpPut( Station station, Path sourcePath, String targetPath ) throws IOException {
+		scpPut( station, sourcePath.toFile(), targetPath );
+	}
+
+	private void scpPut( Station station, String sourcePath, String targetPath ) throws IOException {
+		scpPut( station, new File( sourcePath ), targetPath );
+	}
+
+	private void scpPut( Station station, File sourceFile, String targetPath ) throws IOException {
 		try( FileInputStream fis = new FileInputStream( sourceFile ) ) {
 			scpPut( sourceFile.getName(), sourceFile.length(), fis, station, targetPath );
 		}

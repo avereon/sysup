@@ -9,6 +9,8 @@ import java.util.List;
 @Setter
 public class Station {
 
+	private Type type = Type.PI;
+
 	private String name;
 
 	private String address;
@@ -22,6 +24,7 @@ public class Station {
 		if( size > 0 ) station.setName( values.get( 0 ).trim() );
 		if( size > 1 ) station.setAddress( values.get( 1 ).trim() );
 		if( size > 2 ) station.setUser( values.get( 2 ).trim() );
+		if( size > 3 ) station.setType( Type.of( values.get( 3 ) ) );
 
 		return station;
 	}
