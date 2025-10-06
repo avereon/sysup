@@ -29,7 +29,7 @@ public class UpdaterMod extends Module {
 		registerIcon( "perform", new PerformIcon() );
 		registerIcon( "updater", new PerformIcon() );
 
-		getProgram().getAssetManager().addScheme( new PerformScheme( getProgram() ) );
+		getProgram().getResourceManager().addScheme( new PerformScheme( getProgram() ) );
 
 		// Register the asset type
 		performStationsAssetType = new PerformStationsResourceType( this );
@@ -50,7 +50,7 @@ public class UpdaterMod extends Module {
 		unregisterTool( performStationsAssetType, UpdaterTool.class );
 		unregisterAssetType( performStationsAssetType );
 
-		getProgram().getAssetManager().removeScheme( PerformScheme.ID );
+		getProgram().getResourceManager().removeScheme( PerformScheme.ID );
 
 		unregisterIcon( getCard().getArtifact(), new SouthBranchIcon() );
 		super.shutdown();
