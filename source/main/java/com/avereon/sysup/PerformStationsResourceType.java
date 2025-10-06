@@ -1,15 +1,15 @@
 package com.avereon.sysup;
 
 import com.avereon.xenon.XenonProgramProduct;
-import com.avereon.xenon.asset.AssetType;
+import com.avereon.xenon.asset.ResourceType;
 import lombok.CustomLog;
 
 @CustomLog
-public class PerformStationsAssetType extends AssetType {
+public class PerformStationsResourceType extends ResourceType {
 
 	public static final String KEY = "updater";
 
-	public PerformStationsAssetType( XenonProgramProduct product ) {
+	public PerformStationsResourceType( XenonProgramProduct product ) {
 		super( product, KEY );
 		setDefaultCodec( new PerformStationCodec( product ) );
 	}

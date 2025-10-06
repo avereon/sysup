@@ -13,7 +13,7 @@ public class UpdaterMod extends Module {
 
 	public static final String STYLESHEET = "mod.css";
 
-	private PerformStationsAssetType performStationsAssetType;
+	private PerformStationsResourceType performStationsAssetType;
 
 	@Getter
 	private StationUpdateManager stationUpdateManager;
@@ -32,7 +32,7 @@ public class UpdaterMod extends Module {
 		getProgram().getAssetManager().addScheme( new PerformScheme( getProgram() ) );
 
 		// Register the asset type
-		performStationsAssetType = new PerformStationsAssetType( this );
+		performStationsAssetType = new PerformStationsResourceType( this );
 		registerAssetType( performStationsAssetType );
 
 		// Register the updater tool
