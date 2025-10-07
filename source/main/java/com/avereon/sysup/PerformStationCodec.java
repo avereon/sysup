@@ -2,7 +2,7 @@ package com.avereon.sysup;
 
 import com.avereon.product.Product;
 import com.avereon.product.Rb;
-import com.avereon.xenon.asset.Asset;
+import com.avereon.xenon.asset.Resource;
 import com.avereon.xenon.asset.Codec;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
@@ -54,7 +54,7 @@ public class PerformStationCodec extends Codec {
 	}
 
 	@Override
-	public void load( Asset asset, InputStream input ) throws IOException {
+	public void load( Resource resource, InputStream input ) throws IOException {
 		try {
 			List<List<String>> stations = new ArrayList<>();
 			try( CSVReader csvReader = new CSVReader( new InputStreamReader( input, StandardCharsets.UTF_8 ) ) ) {
@@ -64,14 +64,14 @@ public class PerformStationCodec extends Codec {
 				}
 			}
 
-			asset.setModel( stations.stream().filter( l -> l.size() > 1 ).map( Station::of ).toList() );
+			resource.setModel( stations.stream().filter( l -> l.size() > 1 ).map( Station::of ).toList() );
 		} catch( CsvValidationException | IOException | NullPointerException exception ) {
 			throw new IOException( "Error loading station data", exception );
 		}
 	}
 
 	@Override
-	public void save( Asset asset, OutputStream output ) throws IOException {
+	public void save( Resource resource, OutputStream output ) throws IOException {
 		// This codec does not save data yet
 	}
 

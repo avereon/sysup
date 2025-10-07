@@ -2,7 +2,7 @@ package com.avereon.sysup;
 
 import com.avereon.xenon.ProgramTool;
 import com.avereon.xenon.XenonProgramProduct;
-import com.avereon.xenon.asset.Asset;
+import com.avereon.xenon.asset.Resource;
 import com.avereon.xenon.asset.OpenAssetRequest;
 import com.avereon.xenon.workpane.ToolException;
 import javafx.collections.FXCollections;
@@ -20,8 +20,8 @@ public class UpdaterTool extends ProgramTool {
 
 	private final TableView<StationStatus> table;
 
-	public UpdaterTool( XenonProgramProduct product, Asset asset ) {
-		super( product, asset );
+	public UpdaterTool( XenonProgramProduct product, Resource resource ) {
+		super( product, resource );
 		addStylesheet( UpdaterMod.STYLESHEET );
 		getStyleClass().addAll( "updater-tool" );
 		setIcon( "updater" );
@@ -38,14 +38,14 @@ public class UpdaterTool extends ProgramTool {
 	@Override
 	protected void ready( OpenAssetRequest request ) throws ToolException {
 		super.ready( request );
-		setTitle( request.getAsset().getName() );
+		setTitle( request.getResource().getName() );
 		//setTitle( "Station Updater" );
 
 		// The stations model from the asset
-		Asset asset = request.getAsset();
-		List<Station> stations = asset.getModel();
+		Resource resource = request.getResource();
+		List<Station> stations = resource.getModel();
 		ObservableList<StationStatus> status = FXCollections.observableArrayList( stations.stream().map( StationStatus::new ).toList() );
-		asset.setValue( "status", status );
+		resource.setValue( "status", status );
 
 		table.setItems( status );
 		table.setPlaceholder( new Label( "No stations loaded" ) );

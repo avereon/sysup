@@ -1,7 +1,7 @@
 package com.avereon.sysup;
 
 import com.avereon.xenon.Xenon;
-import com.avereon.xenon.asset.Asset;
+import com.avereon.xenon.asset.Resource;
 import com.avereon.xenon.asset.exception.ResourceException;
 import com.avereon.xenon.scheme.ProductScheme;
 
@@ -14,12 +14,12 @@ public class PerformScheme extends ProductScheme {
 	}
 
 	@Override
-	public boolean exists( Asset asset ) {
-		return asset.getUri().getSchemeSpecificPart().equals( "updater" );
+	public boolean exists( Resource resource ) {
+		return resource.getUri().getSchemeSpecificPart().equals( "updater" );
 	}
 
 	@Override
-	public boolean canLoad( Asset asset ) throws ResourceException {
+	public boolean canLoad( Resource resource ) throws ResourceException {
 		return true;
 	}
 
