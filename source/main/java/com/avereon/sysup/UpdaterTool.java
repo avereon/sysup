@@ -2,8 +2,8 @@ package com.avereon.sysup;
 
 import com.avereon.xenon.ProgramTool;
 import com.avereon.xenon.XenonProgramProduct;
-import com.avereon.xenon.asset.Resource;
-import com.avereon.xenon.asset.OpenAssetRequest;
+import com.avereon.xenon.resource.Resource;
+import com.avereon.xenon.resource.OpenAssetRequest;
 import com.avereon.xenon.workpane.ToolException;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

@@ -2,8 +2,8 @@ package com.avereon.sysup;
 
 import com.avereon.product.Product;
 import com.avereon.product.Rb;
-import com.avereon.xenon.asset.Resource;
-import com.avereon.xenon.asset.Codec;
+import com.avereon.xenon.resource.Resource;
+import com.avereon.xenon.resource.Codec;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
 
